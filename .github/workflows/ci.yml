@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      matrix:
+        monet: [cf, dev]
+      fail-fast: false  # always both
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python (micromamba)
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: docs/environment-docs.yml
+          cache-environment: true
+          create-args: >-
+            pytest
+
+      - if: ${{ matrix.monet == 'dev' }}
+        name: Install development versions of monet and monetio
+        run: |
+          python -m pip list | grep monet
+          python -m pip install --force-reinstall --no-deps https://github.com/noaa-oar-arl/monetio/archive/develop.zip
+          python -m pip install --force-reinstall --no-deps https://github.com/noaa-oar-arl/monet/archive/develop.zip
+
+      - name: Versions
+        run: |
+          which python
+          python -m pip list | grep monet
+          micromamba list | grep monet
+          python -c "import monetio; print('monetio.__version__', getattr(monetio, '__version__', '?'))"
+          python -c "import monet;   print('monet.__version__',   getattr(monet, '__version__', '?'))"
+
+      - name: pytest
+        run: python -m pytest -v -rsx melodies_monet
+      
+      - name: Run docs/examples notebooks as scripts
+        run: |
+          cd docs/examples
+          for f in *.ipynb; do
+            if [ "$f" == 'idealized.ipynb' ]; then
+              jupytext --to py $f -o t.py && python t.py || exit 1
+            fi
+          done
+          cd -
+
+      - name: Prepare idealized save/read cases
+        shell: python
+        run: |
+          from copy import deepcopy
+          import yaml
+
+          with open('docs/examples/control_idealized.yaml') as f:
+            ctl = yaml.safe_load(f)
+          assert {'save', 'read'} < ctl['analysis'].keys()
+
+          ctl_save = deepcopy(ctl)
+          del ctl_save['analysis']['read']
+          with open('docs/examples/control_idealized_save.yaml', 'w') as f:
+            yaml.safe_dump(ctl_save, f)
+
+          ctl_read = deepcopy(ctl)
+          del ctl_read['analysis']['save']
+          with open('docs/examples/control_idealized_read.yaml', 'w') as f:
+            yaml.safe_dump(ctl_read, f)
+
+      - name: Check CLI works
+        run: |
+          cd docs/examples
+          melodies-monet --version
+          python -m melodies_monet --version
+          melodies-monet run control_idealized_save.yaml
+          melodies-monet run control_idealized_read.yaml
+          cd -
+
+  docs:
+    name: Check docs build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python (micromamba)
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: docs/environment-docs.yml
+          cache-environment: true
+
+      - name: linkcheck
+        run: sphinx-build -b linkcheck docs docs/_build/linkcheck
+
+      - name: sphinx-build -W
+        run: sphinx-build -b html -W docs docs/_build/html
+
+      - name: Check Sphinx failure log
+        if: ${{ failure() }}
+        run: |
+          if [ -e /tmp/sphinx-err* ]; then
+            for f in /tmp/sphinx-err*; do
+              echo $f
+              cat $f
+            done
+          fi
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that .py files have the license header
+        run: python3 ci/check-for-license-header.py

@@ -1,0 +1,40 @@
+# Conda environment for building the MELODIES-MONET docs
+name: melodies-monet-docs
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.9
+  #
+  # melodies_monet deps
+  - matplotlib-base<3.9  # for pandas v1 compat
+  - monet
+  - monetio
+  - netcdf4
+  - numpy
+  - pandas<2
+  - pillow<10
+  #
+  # Extras
+  - pooch
+  - timezonefinder
+  - typer
+  - wrf-python  # for WRF-Chem reader in monetio
+  #
+  # Docs
+  - ipykernel
+  - jupyterlab=3.*
+  - jupytext
+  - myst-nb>=0.14
+  - nbclient
+  - sphinx=4.*
+  - sphinx-autobuild
+  - sphinx-click
+  - sphinx-design
+  - sphinx_rtd_theme
+  - sphinx-togglebutton
+  #
+  - pip
+  - pip:
+    # melodies_monet itself
+    - '-e ../'
