@@ -12,11 +12,17 @@ This can be done by using the BoulderAir preprocessor, as follows
 ```
 
 options: 
+
 *`-c, --coordinates`
+
 *`-p, --path`
+
 *`-v, --variables`
+
 *`-r, --resample_freq`
+
 *`-m, --method`
+
 *`-o, --output`
 
 
