@@ -21,6 +21,7 @@ from matplotlib.colors import ListedColormap
 from monet.util.tools import get_epa_region_bounds as get_epa_bounds 
 import math
 from ..plots import savefig
+import warnings
 
 def make_24hr_regulatory(df, col=None):
     """Calculates 24-hour averages
@@ -497,6 +498,126 @@ def make_timeseries(df, df_reg=None, column=None, label=None, ax=None, avg_windo
             ax.set_title(domain_name,fontweight='bold',**text_kwargs)
     return ax
     
+def make_diurnal_cycle(df, column=None, label=None, ax=None, avg_window=None, ylabel=None,
+                    vmin = None, vmax = None,
+                    domain_type=None, domain_name=None,
+                    plot_dict=None, fig_dict=None, text_dict=None,debug=False, **kwargs):
+    """Creates timeseries plot. 
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        model/obs paired data to plot
+    column : str
+        Column label of variable to plot
+    label : str
+        Name of variable to use in plot legend 
+    ax : ax
+        matplotlib ax from previous occurrence so can overlay obs and model 
+        results on the same plot
+    avg_window : rule 
+        Pandas resampling rule (e.g., 'h', 'D')
+    ylabel : str
+        Title of y-axis
+    vmin : real number
+        Min value to use on y-axis
+    vmax : real number
+        Max value to use on y-axis
+    domain_type : str
+        Domain type specified in input yaml file
+    domain_name : str
+        Domain name specified in input yaml file
+    plot_dict : dictionary
+        Dictionary containing information about plotting for each pair 
+        (e.g., color, linestyle, markerstyle)   
+    fig_dict : dictionary
+        Dictionary containing information about figure
+    text_dict : dictionary
+        Dictionary containing information about text
+    debug : boolean
+        Whether to plot interactively (True) or not (False). Flag for 
+        submitting jobs to supercomputer turn off interactive mode.
+        
+    Returns
+    -------
+    ax 
+        matplotlib ax such that driver.py can iterate to overlay multiple models on the 
+        same plot
+        
+    """
+    if debug == False:
+        plt.ioff()
+    #First define items for all plots
+    #set default text size
+    def_text = dict(fontsize=14)
+    if text_dict is not None:
+        text_kwargs = {**def_text, **text_dict}
+    else:
+        text_kwargs = def_text
+    # set ylabel to column if not specified.
+    if ylabel is None:
+        ylabel = column
+    if label is not None:
+        plot_dict['label'] = label
+    if vmin is not None and vmax is not None:
+        plot_dict['ylim'] = [vmin,vmax]
+    #scale the fontsize for the x and y labels by the text_kwargs
+    plot_dict['fontsize'] = text_kwargs['fontsize']*0.8
+    #Then, if no plot has been created yet, create a plot and plot the obs.
+    if ax is None: 
+        #First define the colors for the observations.
+        obs_dict = dict(color='k', linestyle='-',marker='*', linewidth=1.2, markersize=6.)
+        if plot_dict is not None:
+            #Whatever is not defined in the yaml file is filled in with the obs_dict here.
+            plot_kwargs = {**obs_dict, **plot_dict}
+        else:
+            plot_kwargs = obs_dict
+        # create the figure
+        if fig_dict is not None:
+            f,ax = plt.subplots(**fig_dict)    
+        else: 
+            f,ax = plt.subplots(figsize=(10,6))
+        # plot the line
+    else:
+        plot_kwargs = { **dict(linestyle='-', marker='*', linewidth=1.2, markersize=6.), **plot_dict}
+    time = pd.DatetimeIndex(df["time"])
+    df_plot_group = df.groupby(time.hour)
+    df_plot = df_plot_group.median(numeric_only=True)
+    ax = df_plot[column].plot(ax=ax, legend=True, **plot_kwargs) 
+    shading_range = kwargs.get("shading_range", None)
+    if shading_range is not None:
+        if shading_range not in ["IQR", "std", "total_range"]:
+            warnings.warn(f"shading_range = {shading_range}. IQR, std or total_range"
+                          +"expected. Skipping.")
+        if "IQR" == shading_range:
+            df_max = df_plot_group.quantile(q=75, numeric_only=True)
+            df_min = df_plot_group.quantile(q=25, numeric_only=True)
+        elif "std" == shading_range:
+            std = df_plot_group.std(numeric_only=True)
+            df_max = df_plot + std
+            df_min = df_plot - std
+        elif "total_range" == shading_range:
+            df_max = df_plot_group.max(numeric_only=True)
+            df_min = df_plot_group.min(numeric_only=True)
+        ax.fill_between(x=df_plot.index, y1=df_max[column], y2=df_min[column], color=ax.get_lines()[-1].get_color(), alpha=0.3)
+
+    
+    #Set parameters for all plots
+    ax.set_ylabel(ylabel,fontweight='bold',**text_kwargs)
+    ax.set_xlabel("Hour",fontweight='bold',**text_kwargs)
+    ax.legend(frameon=False,fontsize=text_kwargs['fontsize']*0.8)
+    ax.tick_params(axis='both',length=10.0,direction='inout')
+    ax.tick_params(axis='both',which='minor',length=5.0,direction='out')
+    ax.legend(frameon=False,fontsize=text_kwargs['fontsize']*0.8,
+              bbox_to_anchor=(1.0, 0.9), loc='center left')
+    if domain_type is not None and domain_name is not None:
+        if domain_type == 'epa_region':
+            ax.set_title('EPA Region ' + domain_name,fontweight='bold',**text_kwargs)
+        else:
+            ax.set_title(domain_name,fontweight='bold',**text_kwargs)
+    return ax
+
+
 def make_taylor(df, df_reg=None, column_o=None, label_o='Obs', column_m=None, label_m='Model', 
                 dia=None, ylabel=None, ty_scale=1.5,
                 domain_type=None, domain_name=None,
