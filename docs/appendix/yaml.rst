@@ -324,6 +324,22 @@ For automatic EPA or Giorgi region boxes (if they are not included
 with the columns in the observation file), choose ``auto-region:epa`` or
 ``auto-region:giorgi``. Take into account that ``auto-region:epa`` is only a rough
 approximation, since it assumes perfect, rectangular lonlat boxes.
+If you only need a rectangular, lonlat box which does not cross the antimeridian, you can use
+``auto-region:box``, which needs to be combined with the ``domain_info`` parameter and
+a box of ``bounds: [minlat, minlon, maxlat, maxlon]``. See :doc:`/users_guide/region_selection` for examples.
+
+If you have ``regionmask`` installed, you can also use it for advanced region support.
+These regions can be arbitrary, and its use require providing ``domain_type`` parameters starting
+with ``custom:``.
+There are three ways to use ``regionmask``. ``custom:polygon`` lets the user define their own
+polygon in the section ``domain_info``, using the keyword ``mask_info``.
+``custom:defined-region`` lets the user utilize any region predefined by 
+`regionmask <https://regionmask.readthedocs.io/en/stable/>`__, defined in ``domain_info`` using
+the keywords ``name_regiontype`` and ``region``.
+The third option is using the keyword `custom:file`, which is defined in ``domain_info`` with
+either ``mask_path:path_shapefile_or_geojson`` or ``mask_url:url_of_shapefile_or_geojson``, 
+``abbrevs``, ``name`` and ``region_name``. See :doc:`/users_guide/region_selection` for examples and a more
+detailed explanation.
 
 **domain_name:** List of domain names to be plotted. If domain_type = all, all 
 data will be used and the domain_name is used only in the plot title. If 

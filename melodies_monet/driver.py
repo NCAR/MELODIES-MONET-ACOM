@@ -1492,7 +1492,8 @@ class analysis:
         None
         """
         
-        from .util.tools import resample_stratify, get_epa_region_bounds, get_giorgi_region_bounds
+        from .util.tools import resample_stratify
+        from .util.region_select import select_region
         import matplotlib.pyplot as plt
         pair_keys = list(self.paired.keys())
         if self.paired[pair_keys[0]].type.lower() in ['sat_grid_clm','sat_swath_clm']:
@@ -1579,9 +1580,11 @@ class analysis:
                 # Loop also over the domain types. So can easily create several overview and zoomed in plots.
                 domain_types = grp_dict['domain_type']
                 domain_names = grp_dict['domain_name']
+                domain_infos = grp_dict.get('domain_info', {})
                 for domain in range(len(domain_types)):
                     domain_type = domain_types[domain]
                     domain_name = domain_names[domain]
+                    domain_info = domain_infos.get(domain_name, None)
 
                     # Then loop through each of the pairs to add to the plot.
                     for p_index, p_label in enumerate(pair_labels):
@@ -1600,9 +1603,15 @@ class analysis:
                             modvar = modvar + 'trpcol'
                             
                         # for pt_sfc data, convert to pandas dataframe, format, and trim
-                        if obs_type in ["sat_swath_sfc", "sat_swath_clm", 
-                                                                        "sat_grid_sfc", "sat_grid_clm", 
-                                                                        "sat_swath_prof"]:
+                        # Query selected points if applicable
+                        if domain_type != 'all':
+                            p_region = select_region(p.obj, domain_type, domain_name, domain_info)
+                        else:
+                            p_region = p.obj
+
+                        
+                        if obs_type in ["sat_swath_sfc", "sat_swath_clm", "sat_grid_sfc",
+                                        "sat_grid_clm", "sat_swath_prof"]:
                              # convert index to time; setup for sat_swath_clm
                             
                             if 'time' not in p.obj.dims and obs_type == 'sat_swath_clm':
@@ -1614,12 +1623,12 @@ class analysis:
                             #    pairdf_all = p.obj.stack(ll=['x','y'])
                             #    pairdf_all = pairdf_all.rename_dims({'ll':'y'})
                             else:
-                                pairdf_all = p.obj
+                                pairdf_all = p_region
                             # Select only the analysis time window.
                             pairdf_all = pairdf_all.sel(time=slice(self.start_time,self.end_time))
                         else:
                             # convert to dataframe
-                            pairdf_all = p.obj.to_dataframe(dim_order=["time", "x"])
+                            pairdf_all = p_region.to_dataframe(dim_order=["time", "x"])
                             # Select only the analysis time window.
                             pairdf_all = pairdf_all.loc[self.start_time : self.end_time]
                             
@@ -1683,30 +1692,6 @@ class analysis:
                         # Determine outname
                         outname = "{}.{}.{}.{}.{}.{}.{}".format(grp, plot_type, obsvar, startdatename, enddatename, domain_type, domain_name)
 
-                        # Query selected points if applicable
-                        if domain_type != 'all':
-                            if domain_type.startswith("auto-region"):
-                                _, auto_region_id = domain_type.split(":")
-                                if auto_region_id == 'epa':
-                                    bounds = get_epa_region_bounds(acronym=domain_name)
-                                elif auto_region_id == 'giorgi':
-                                    bounds = get_giorgi_region_bounds(acronym=domain_name)
-                                else:
-                                    raise ValueError(
-                                        "Currently, region selections whithout a domain query have only "
-                                        "been implemented for Giorgi and EPA regions. You asked for "
-                                        f"{domain_type!r}. Soon, arbitrary rectangular boxes, US states and "
-                                        "others will be included."
-                                    )
-                                pairdf_all = pairdf_all.loc[
-                                                (pairdf_all["latitude"] > bounds[0])
-                                                & (pairdf_all["longitude"] > bounds[1])
-                                                & (pairdf_all["latitude"] < bounds[2])
-                                                & (pairdf_all["longitude"] < bounds[3])
-                                             ]
-                            else:
-                                pairdf_all.query(domain_type + ' == ' + '"' + domain_name + '"', inplace=True)
-                        
                         # Query with filter options
                         if 'filter_dict' in grp_dict['data_proc'] and 'filter_string' in grp_dict['data_proc']:
                             raise Exception("""For plot group: {}, only one of filter_dict and filter_string can be specified.""".format(grp))
@@ -2722,6 +2707,8 @@ class analysis:
                                     vmodel = self.models[p.model].obj.loc[dict(time=slice(self.start_time, self.end_time))]
                             except KeyError as e:
                                 raise Exception("MONET requires an altitude dimension named 'z'") from e
+                            if grp_dict.get('data_proc', {}).get('crop_model', False) and domain_name != all:
+                                vmodel = select_region(vmodel, domain_type, domain_name, domain_info)
 
                             # Determine proj to use for spatial plots
                             proj = splots.map_projection(self.models[p.model])
@@ -2773,6 +2760,7 @@ class analysis:
         """
         from .stats import proc_stats as proc_stats
         from .plots import surfplots as splots
+        from .util.region_select import select_region
 
         # first get the stats dictionary from the yaml file
         stat_dict = self.control_dict['stats']
@@ -2812,9 +2800,11 @@ class analysis:
             # Loop also over the domain types.
             domain_types = stat_dict['domain_type']
             domain_names = stat_dict['domain_name']
+            domain_infos = stat_dict.get('domain_info', {})
             for domain in range(len(domain_types)):
                 domain_type = domain_types[domain]
                 domain_name = domain_names[domain]
+                domain_info = domain_infos.get(domain_name, None)
 
                 # The tables and text files will be output at this step in loop.
                 # Create an empty pandas dataarray.
@@ -2867,22 +2857,24 @@ class analysis:
                         if obsvar == 'nitrogendioxide_tropospheric_column':
                             modvar = modvar + 'trpcol' 
 
+                        # Query selected points if applicable
+                        if domain_type != 'all':
+                            p_region = select_region(p.obj, domain_type, domain_name, domain_info)
+                        else:
+                            p_region = p.obj
+
                         # convert to dataframe
                         # handle different dimensios, M.Li
-                        if ('y' in p.obj.dims) and ('x' in p.obj.dims):
-                            pairdf_all = p.obj.to_dataframe(dim_order=["x", "y"])
-                        elif ('y' in p.obj.dims) and ('time' in p.obj.dims):
-                            pairdf_all = p.obj.to_dataframe(dim_order=["time", "y"])
+                        if ('y' in p_region.dims) and ('x' in p_region.dims):
+                            pairdf_all = p_region.to_dataframe(dim_order=["x", "y"])
+                        elif ('y' in p_region.dims) and ('time' in p_region.dims):
+                            pairdf_all = p_region.to_dataframe(dim_order=["time", "y"])
                         else:
-                            pairdf_all = p.obj.to_dataframe(dim_order=["time", "x"])
+                            pairdf_all = p_region.to_dataframe(dim_order=["time", "x"])
 
                         # Select only the analysis time window.
                         pairdf_all = pairdf_all.loc[self.start_time : self.end_time]
 
-                        # Query selected points if applicable
-                        if domain_type != 'all':
-                            pairdf_all.query(domain_type + ' == ' + '"' + domain_name + '"', inplace=True)
-                        
                         # Query with filter options
                         if 'data_proc' in stat_dict:
                             if 'filter_dict' in stat_dict['data_proc'] and 'filter_string' in stat_dict['data_proc']:
