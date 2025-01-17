@@ -38,3 +38,31 @@ options:
 `method`: How to perform the resample. Default: `inst` -> The data will be interpolated linearly to represent instantaneous data at the resampling time. Other options: `median`, `mean`, `max`, `min`.
 
 `output_name.nc`: Name of the output file. It will be netCDF
+
+
+## Calculating ratios
+Right now, proper ratio calculation is not implemented in the base code of MELODIES-MONET.
+However, it can be manually done in the code, by defining objects (i.e., pair objects, although
+specific observations/models objects can be defined) in the code.
+
+An example of how to do this for each data type. This can possibly be done before the pairing, in
+which case it would be paired automatically. However, the recommended procedure for satellite data
+is to apply this directly to the paired object, to guarantee that the averaging kernels are properly
+applied to the data before any operations are performed.
+
+### Pair objects
+```
+ratio_hcho_no2 = xr.Dataset()
+ratio_hcho_no2['model_hcho_no2'] = an.paired['tempo_l2_hcho_CAMX'].obj['FORM'] / an.paired['tempo_l2_no2_CAMX'].obj['NO2']
+ratio_hcho_no2['tempo_hcho_no2'] = an.paired['tempo_l2_hcho_CAMX'].obj['vertical_column'] / an.paired['tempo_l2_no2_CAMX'].obj['vertical_column_troposphere']
+
+p = driver.pair()
+p.type = 'sat_swath_clm'
+p.obs = 'tempo_l2_hcho_no2'
+p.model = 'CAMX'
+p.model_vars = ['model_hcho_no2']
+p.obs_vars = ['tempo_hcho_no2']
+p.obj = ratio_hcho_no2
+p.filename = 'tempo_l2_hcho_no2_CAMX.nc'
+an.paired['ratio_hcho_no2'] = p
+```
