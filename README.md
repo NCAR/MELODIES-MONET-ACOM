@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+# MELODIES-MONET-ACOM
+Development of a model evaluation tool (MELODIES-MONET) for a specific use case with the state of Colorado.
+=======
 <h1>
   <a href="https://melodies-monet.readthedocs.io">
     <img src="https://raw.githubusercontent.com/NOAA-CSL/MELODIES-MONET/main/melodies_monet/data/MM_logo.png" alt="MELODIES MONET logo" height="100" valign="bottom">
@@ -16,3 +20,4 @@ evaluation of air quality and atmospheric composition.
 ## Documentation
 
 Built and hosted by Read the Docs: <https://melodies-monet.readthedocs.io>
+>>>>>>> upstream/main
