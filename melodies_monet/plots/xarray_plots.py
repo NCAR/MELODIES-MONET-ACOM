@@ -940,7 +940,7 @@ def make_spatial_bias_gridded(
             (position_m.y1 - position_m.y0) * 1.1,
         ]
     )
-    cax.set_ylabel("$\Delta$" + ylabel, fontweight="bold", **text_kwargs)
+    cax.set_ylabel(r"$\Delta$" + ylabel, fontweight="bold", **text_kwargs)
     cax.tick_params(
         labelsize=text_kwargs["fontsize"] * 0.8,
         length=10.0,
@@ -953,7 +953,7 @@ def make_spatial_bias_gridded(
     # plt.tight_layout(pad=0)
     savefig(
         outname + ".png",
-        loc=4,
+        loc=3,
         logo_height=100,
         bbox_inches="tight",
         dpi=150,
