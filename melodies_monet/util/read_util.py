@@ -221,7 +221,7 @@ def read_aircraft_obs_csv(filename,time_var=None):
 """ Reads and formats the excel files from CDPHE VOC Canisters"""
 
 
-def read_site_excel(data_path, site_data, site_number=None):
+def read_site_excel(data_path, site_data, site_number=None, **kwargs):
     """Load a site from from an MS Excel sheet.
     Currently optimized for CDPHE's VOC canister data.
 
