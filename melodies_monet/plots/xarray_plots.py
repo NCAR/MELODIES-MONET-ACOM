@@ -789,6 +789,7 @@ def make_spatial_bias_gridded(
     fig_dict=None,
     text_dict=None,
     debug=False,
+    **kwargs,
 ):
     """Creates difference plot for satellite and model data.
     For data in swath format, overplots all differences

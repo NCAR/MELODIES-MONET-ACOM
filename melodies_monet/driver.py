@@ -2715,7 +2715,8 @@ class analysis:
                                     "fig_dict": fig_dict,
                                     "text_dict": text_dict,
                                     "debug": self.debug
-                                }
+                                },
+                                **plot_dict
                             }
                             make_spatial_bias_gridded(**plot_params)
                             del (fig_dict, plot_dict, text_dict, obs_dict, obs_plot_dict) #Clear info for next plot.
