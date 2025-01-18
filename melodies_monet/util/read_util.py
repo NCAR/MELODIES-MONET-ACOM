@@ -1,6 +1,12 @@
 # Copyright (C) 2022 National Center for Atmospheric Research and National Oceanic and Atmospheric Administration
 # SPDX-License-Identifier: Apache-2.0
 #
+import os
+import warnings
+import pandas as pd
+import xarray as xr
+
+
 def read_saved_data(analysis, filenames, method, attr, xr_kws={}):
     """Read previously saved dict containing melodies-monet data (:attr:`paired`, :attr:`models`, or :attr:`obs`)
     from pickle file or netcdf file, populating the :attr:`paired`, :attr:`models`, or :attr:`obs` dict.
@@ -22,9 +28,7 @@ def read_saved_data(analysis, filenames, method, attr, xr_kws={}):
     -------
     None
     """
-    import xarray as xr
     from glob import glob
-    import os
     from .. import tutorial
     
     # Determine where to read files from
@@ -129,8 +133,6 @@ def read_analysis_ncf(filenames,xr_kws={}):
         Xarray dataset containing merged files.
 
     """
-    import xarray as xr
-    
     if len(filenames)==1:
         print('Reading:', filenames[0])
         ds_out = xr.open_dataset(filenames[0],**xr_kws)
@@ -206,9 +208,6 @@ def read_aircraft_obs_csv(filename,time_var=None):
         Xarray dataset containing information from .csv file
 
     """
-    import xarray as xr
-    import pandas as pd
-    
     df = pd.read_csv(filename)
     if time_var is not None:
         df.rename(columns={time_var:'time'},inplace=True)
@@ -220,3 +219,140 @@ def read_aircraft_obs_csv(filename,time_var=None):
     df.set_index('time',inplace=True)
     
     return xr.Dataset.from_dataframe(df)
+""" Reads and formats the excel files from CDPHE VOC Canisters"""
+
+
+def read_site_excel(data_path, site_data, site_number=None):
+    """Load a site from from an MS Excel sheet.
+    Currently optimized for CDPHE's VOC canister data.
+
+    Parameters
+    ----------
+    data_path: str
+        Path to the excel file containing the data
+    site_data: dict
+        dict containing the data of the site.
+        Required keys are:
+            'coords': {'latitude': float, 'longitude': float}
+                Coordinates of the site
+            'sheet_name': str
+                name of the excel sheet containing the site
+        Optional keys:
+            skiprows: int
+                rows that should be skipped when reading the excel sheet.
+                Defaults to 0.
+            headers: int | list[int]
+                rows with headers for building the data frame.
+                Take into account that 'skiprows' takes precedence.
+                I.e., if the headers are in rows [15,16], but you
+                already typed 'skiprows': 15, you should type
+                'headers': [0,1].
+                Defaults to 0.
+            site_id: str
+                ID of the site. Defaults to sheet_name.
+            qualifier_name: str
+                Name of row containing the qualifiers.
+                If None, 'Qualifier' is assumed.
+            ignore_qualifiers: None
+                If None, only data without qualifiers is plotted.
+            na_values: scalar | str | list-like | dict | default None
+                Values that are NaN
+    site_number: int
+        Number of site. If only one site is provided, it should be 0.
+        This keyword is set for clearer compilation of multiple sites.
+
+    Returns
+    -------
+    xr.Dataset
+        Dataset containing the information of the site
+    """
+    params = {
+        "skiprows": None,
+        "headers": 0,
+        "site_id": site_data["sheet_name"],
+        "qualifier_name": "Qualifier",
+        "keep_qualifiers": None,
+        "na_values": "None" ** site_data,
+    }
+    site_number = 0 if site_number is None else site_number
+    data = pd.read_excel(
+        data_path,
+        sheet_name=params["sheet_name"],
+        skiprows=params["skiprows"],
+        header=params["skiprows"],
+        na_values=params["na_values"],
+    )
+    keep_qualifiers = params["keep_qualifiers"]
+    if keep_qualifiers is None or keep_qualifiers != "no":
+        data = data[data[params["qualifier_name"].isnull()]]
+    elif params["keep_qualifiers"] != "all":
+        data = data[
+            data["Qualifier"].isnull() or data["Qualifier"].isin(list(params[keep_qualifiers]))
+        ]
+    time = data["Sample"]["Date"].dt.tz_localize("America/Denver").dt.tz_convert(None)
+    data.loc[:, ("Sample", "Date")] = time
+    variables = data["Analysis"]["Analyte"].unique()
+    compiled_data = xr.Dataset()
+    for v in variables:
+        tmp_data = data.loc[data["Analysis"]["Analyte"] == v]
+        tmp_ds = xr.Dataset()
+        tmp_ds["time"] = (("time",), tmp_data["Sample"]["Date"].values)
+        tmp_ds["x"] = (("x",), [site_number])
+        tmp_ds[v] = (("time", "x"), tmp_data["CAS"]["Result"].values[..., None])
+        tmp_ds[v].attrs = {
+            "values": tmp_data["Detection"]["Units"].unique(),
+        }
+        compiled_data = xr.merge([compiled_data, tmp_ds])
+
+    compiled_data["longitude"] = (("x",), [params["site_coords"]["longitude"]])
+    compiled_data["latitude"] = (("x",), [params["site_coords"]["latitude"]])
+    compiled_data["siteid"] = (("x",), [params["site_id"]])
+    compiled_data = compiled_data.drop_duplicates("time")
+    return compiled_data
+
+
+def compile_sites_excel(data_path, site_dict):
+    """Compiles all sites in a file
+    Currently optimized for CDPHE VOC canister data, but should work for most.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to the excel file containing the data.
+    site_dict : dict
+        Dictionary containing a key per site (ideally, the site's name)
+        and a dict as site_value, to pass to read_cdphe_site
+
+    Returns
+    -------
+    xr.Dataset
+        Dataset with all sites compiled
+    """
+
+    compiled_data = xr.Dataset()
+    for n, s in enumerate(list(site_dict.keys())):
+        site_data = site_dict[s]
+        ds = read_site_excel(data_path, site_data, site_number=n)
+        compiled_data = xr.merge([compiled_data, ds])
+    return compiled_data
+
+
+def control_reading_excel(data_path, site_type, site_dict):
+    """Controls the reading and file preparation process.
+
+    Parameters
+    ----------
+    path : str | list | glob object
+        Path to files that should be opened
+    site_type : str
+        Type of site/excel to read. Currently, only CDPHE VOC Canisters are implemented
+    site_dict : dict
+
+    Returns
+    -------
+    xr.Dataset
+        Dataset with excel compiled
+    """
+    if site_type != "cdphe_canisters":
+        warnings.warn("site_type is not cdphe_canisters. Will attempt to read anyway")
+    return compile_sites_excel(data_path, site_dict)
