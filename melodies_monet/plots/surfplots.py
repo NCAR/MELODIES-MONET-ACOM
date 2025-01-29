@@ -468,7 +468,7 @@ def make_timeseries(df, df_reg=None, column=None, label=None, ax=None, avg_windo
             ax = df_reg.set_index("time_local")[column+'_reg'].resample('D').mean().plot(ax=ax, legend=True, **plot_kwargs)
         else:
             if avg_window is None:
-                ax = df[column].plot(ax=ax, **plot_kwargs)  
+                ax = df.groupby('time').mean(numeric_only=True)[column].plot(ax=ax, **plot_kwargs)  
             else:
                 ax = df[column].resample(avg_window).mean().plot(ax=ax, legend=True, **plot_kwargs) 
 
@@ -479,7 +479,7 @@ def make_timeseries(df, df_reg=None, column=None, label=None, ax=None, avg_windo
             ax = df_reg.set_index("time_local")[column+'_reg'].resample('D').mean().plot(ax=ax, legend=True, **plot_dict)
         else:
             if avg_window is None:
-                ax = df[column].plot(ax=ax, legend=True, **plot_dict)
+                ax = df.groupby('time').mean(numeric_only=True)[column].plot(ax=ax, legend=True, **plot_dict)
             else:
                 ax = df[column].resample(avg_window).mean().plot(ax=ax, legend=True, **plot_dict) 
     
