@@ -13,6 +13,7 @@ import datetime
 
 
 from .util import write_util
+from .util import tools
 
 __all__ = (
     "pair",
@@ -181,9 +182,10 @@ class observation:
                     from .util.read_util import read_aircraft_obs_csv
                     assert len(files) == 1, "MELODIES-MONET can only read one csv file"
                     self.obj = read_aircraft_obs_csv(filename=files[0],time_var=self.time_var)
-                elif extension in ['xls', 'xlsx']:
+                elif extension in ['.xls', '.xlsx']:
                     from .util.read_util import control_reading_excel
-                    self.obj = control_reading_excel(files, self.obs_type, self.variable_dict)
+                    assert len(files) == 1, "MELODIES-MONET can only read one excel file"
+                    self.obj = control_reading_excel(files[0], self.obs_type, self.site_dict)
                 else:
                     self.obj = xr.open_dataset(files[0])
             elif extension in ['.ict', '.icartt']:
@@ -974,6 +976,7 @@ class analysis:
                     m.variable_summing = self.control_dict['model'][mod]['variable_summing']
                 if 'plot_kwargs' in self.control_dict['model'][mod].keys():
                     m.plot_kwargs = self.control_dict['model'][mod]['plot_kwargs']
+                m.data_proc = self.control_dict['model'][mod].get('data_proc', None)
                     
                 # unstructured grid check
                 if m.model in ['cesm_se']:
@@ -1054,6 +1057,8 @@ class analysis:
                     o.time_var = self.control_dict['obs'][obs]['time_var']
                 if 'ground_coordinate' in self.control_dict['obs'][obs].keys():
                     o.ground_coordinate = self.control_dict['obs'][obs]['ground_coordinate']
+                if 'site_dict' in self.control_dict['obs'][obs].keys():
+                    o.site_dict = self.control_dict['obs'][obs]['site_dict']
                 if 'sat_type' in self.control_dict['obs'][obs].keys():
                     o.sat_type = self.control_dict['obs'][obs]['sat_type']
                 if load_files:
@@ -1193,6 +1198,18 @@ class analysis:
 
                 # simplify the objs object with the correct mapping variables
                 obs = self.obs[obs_to_pair]
+
+                # process model data if required
+                if self.models[model_label].data_proc is not None and 'average' in self.models[model_label].data_proc:
+                    if self.models[model_label].data_proc['average']['start_hour'] == 'obs':
+                        start_hour = obs.obj.time
+                    else:
+                        start_hour = self.models[model_label].data_proc['average']['start_hour']
+                    model_obj = tools.average_between_hours(
+                        model_obj,
+                        start_hour,
+                        self.models[model_label].data_proc['average']['nhours']
+                    )
 
                 # pair the data
                 # if pt_sfc (surface point network or monitor)
