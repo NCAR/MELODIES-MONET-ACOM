@@ -218,7 +218,6 @@ def read_aircraft_obs_csv(filename,time_var=None):
     df.set_index('time',inplace=True)
     
     return xr.Dataset.from_dataframe(df)
-""" Reads and formats the excel files from CDPHE VOC Canisters"""
 
 
 def read_site_excel(data_path, site_data, site_number=None, **kwargs):
@@ -266,48 +265,89 @@ def read_site_excel(data_path, site_data, site_number=None, **kwargs):
         Dataset containing the information of the site
     """
     params = {
-        "skiprows": None,
-        "headers": 0,
-        "site_id": site_data["sheet_name"],
-        "qualifier_name": "Qualifier",
-        "keep_qualifiers": None,
-        "na_values": "None" ** site_data,
+        **{
+            "skiprows": None,
+            "headers": 0,
+            "site_id": site_data["sheet_name"],
+            "qualifier_name": "Qualifier",
+            "keep_qualifiers": None,
+            "na_values": None,
+            "timezone": "UTC",
+            "analyte": ("Analysis", "Analyte"),
+            "time_var": ("Sample", "Date"),
+            "unit_var": ("Detection", "Units"),
+            "results": ('CAS', 'Result'),
+            "repeated_values": None,
+            "sampling_start_hour": 6,
+            "sampling_length": 3,
+        },
+        **site_data,
     }
     site_number = 0 if site_number is None else site_number
+    if isinstance(params['na_values'], str):
+        params['na_values'] = [params['na_values']]
     data = pd.read_excel(
         data_path,
         sheet_name=params["sheet_name"],
         skiprows=params["skiprows"],
-        header=params["skiprows"],
-        na_values=params["na_values"],
+        header=params["header"],
+        na_values=(params["na_values"] + [r'^\s*$']),
+        keep_default_na=True,
+    ).dropna(how='all')
+
+    data = _apply_qualifiers(data, params['qualifier_name'], params['keep_qualifiers'])
+    data.loc[:, "time_local"] = (
+            data[params["time_var"]].dt.normalize()
+            + pd.Timedelta(params['sampling_start_hour'], 'h')
     )
-    keep_qualifiers = params["keep_qualifiers"]
-    if keep_qualifiers is None or keep_qualifiers != "no":
-        data = data[data[params["qualifier_name"].isnull()]]
-    elif params["keep_qualifiers"] != "all":
-        data = data[
-            data["Qualifier"].isnull() or data["Qualifier"].isin(list(params[keep_qualifiers]))
-        ]
-    time = data["Sample"]["Date"].dt.tz_localize("America/Denver").dt.tz_convert(None)
-    data.loc[:, ("Sample", "Date")] = time
-    variables = data["Analysis"]["Analyte"].unique()
+    data.loc[:, "time_utc"] = (
+            data["time_local"].dt.tz_localize(params["timezone"]).dt.tz_convert(None)
+    ).copy()
+    variables = data[params["analyte"]].unique()
     compiled_data = xr.Dataset()
     for v in variables:
-        tmp_data = data.loc[data["Analysis"]["Analyte"] == v]
+        tmp_data = data.loc[data[params["analyte"]] == v]
         tmp_ds = xr.Dataset()
-        tmp_ds["time"] = (("time",), tmp_data["Sample"]["Date"].values)
+        tmp_ds["time"] = (("time",), tmp_data["time_utc"].values)
         tmp_ds["x"] = (("x",), [site_number])
-        tmp_ds[v] = (("time", "x"), tmp_data["CAS"]["Result"].values[..., None])
-        tmp_ds[v].attrs = {
-            "values": tmp_data["Detection"]["Units"].unique(),
-        }
+        if params["timezone"] not in ['UTC', 'UCT', 'Etc/UTC', 'Etc/UCT', 'Etc/Universal']:
+            tmp_ds["time_local"] = (("time", "x"), tmp_data["time_local"].values[..., None])
+            time_local = tmp_ds["time_local"].drop_duplicates(dim='time')
+        tmp_ds[v] = (("time", "x"), tmp_data[params["results"]].values[..., None])
+        try:
+            tmp_ds[v].attrs = {"units": tmp_data[params["unit_var"]].unique()}
+        except KeyError:
+            tmp_ds[v].attrs = {"units": params["unit_var"]}
+        try:
+            tmp_ds = tmp_ds.groupby('time').mean()
+        except ValueError:
+            pass
+        tmp_ds["time_local"] = time_local
         compiled_data = xr.merge([compiled_data, tmp_ds])
 
     compiled_data["longitude"] = (("x",), [params["site_coords"]["longitude"]])
     compiled_data["latitude"] = (("x",), [params["site_coords"]["latitude"]])
     compiled_data["siteid"] = (("x",), [params["site_id"]])
-    compiled_data = compiled_data.drop_duplicates("time")
     return compiled_data
+
+
+def _apply_qualifiers(data, qa_name, keep_qualifiers):
+    """Apply a qualifier
+
+    Parameters
+    ----------
+    data: pd.DataFrame
+        Dataframe containing the data
+    qa_name: str | tuple
+        Name of the column containing the qualifiers
+    keep_qualifiers: str | list[str] | 
+        Qualifiers to keep
+    """
+    if keep_qualifiers is None or keep_qualifiers != "no":
+        return data[data[*qa_name].isnull()]
+    elif keep_qualifiers != "all":
+        return data[data[*qa_name].isnull() | data[*qa_name].isin(list(keep_qualifiers))]
+    return data
 
 
 def compile_sites_excel(data_path, site_dict):
@@ -352,6 +392,6 @@ def control_reading_excel(data_path, site_type, site_dict):
     xr.Dataset
         Dataset with excel compiled
     """
-    if site_type != "cdphe_canisters":
-        warnings.warn("site_type is not cdphe_canisters. Will attempt to read anyway")
+    if site_type != "pt_sfc":
+        warnings.warn("site_type is not pt_sfc. Will attempt to read anyway")
     return compile_sites_excel(data_path, site_dict)
