@@ -6,6 +6,7 @@ from __future__ import division
 from builtins import range
 
 import numpy as np
+import xarray as xr
 
 __author__ = 'barry'
 
@@ -508,3 +509,32 @@ def convert_std_to_amb_bc(ds,convert_vars=[],temp_var=None,pres_var=None):
     for var in convert_vars:
         ds[var] = ds[var]*convert_std_to_amb_bc
 
+
+def average_between_hours(data, start_hours, nhours):
+    """Calculates the average from start_hours, including nhours forward.
+
+    Parameters
+    ----------
+    data : xr.Dataset
+        Dataset containing the data
+    start_hours : xr.DataArray[datetime64] | np.ndarray[datetime64]
+        Starting times for the average
+    nhours : int | float
+        Number of hours forward
+
+    Returns
+    -------
+    xr.Dataset
+        Dataset containing averaged data
+    """
+
+    existing_h = np.intersect1d(start_hours, data['time'])
+    data_out = xr.zeros_like(data.sel(time=existing_h))
+    for t, start in enumerate(existing_h):
+        data_out[{"time": t}] = data.sel(
+            time=slice(start, start + np.timedelta64(nhours, 'h'))
+        ).mean(dim='time', keep_attrs=True)
+    data_out.attrs["description"] = (
+            f"{nhours} means, starting at reported time. {data_out.attrs.get('description', '')}"
+    )
+    return data_out
