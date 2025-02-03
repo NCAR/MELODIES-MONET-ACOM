@@ -865,10 +865,10 @@ def make_spatial_bias_gridded(
         lonmin, lonmax = dset["longitude"].min(), dset["longitude"].max()
         title_add = ""
     else:
-        latmin = -90
-        lonmin = -180
-        latmax = 90
-        lonmax = 180
+        # latmin = -90
+        # lonmin = -180
+        # latmax = 90
+        # lonmax = 180
         title_add = domain_name + ": "
 
     # Map the model output first.
