@@ -692,7 +692,10 @@ def make_spatial_dist(
 
     # Add options that this could be included in the fig_kwargs in yaml file too.
     if "extent" not in map_kwargs:
-        map_kwargs["extent"] = [lonmin, lonmax, latmin, latmax]
+        try:
+            map_kwargs["extent"] = [lonmin, lonmax, latmin, latmax]
+        except NameError:
+            map_kwargs["extent"] = None
     if "crs" not in map_kwargs:
         map_kwargs["crs"] = proj
 
@@ -865,10 +868,11 @@ def make_spatial_bias_gridded(
         lonmin, lonmax = dset["longitude"].min(), dset["longitude"].max()
         title_add = ""
     else:
-        # latmin = -90
-        # lonmin = -180
-        # latmax = 90
-        # lonmax = 180
+        valid_domain = dset.where(dset[varname_o].notnull() | dset[varname_m].notnull(), drop=True)
+        latmin = valid_domain["latitude"].min().values
+        lonmin = valid_domain["longitude"].min().values
+        latmax = valid_domain["latitude"].max().values
+        lonmax = valid_domain["longitude"].max().values
         title_add = domain_name + ": "
 
     # Map the model output first.
@@ -876,7 +880,10 @@ def make_spatial_bias_gridded(
 
     # Add options that this could be included in the fig_kwargs in yaml file too.
     if "extent" not in map_kwargs:
-        map_kwargs["extent"] = [lonmin, lonmax, latmin, latmax]
+        try:
+            map_kwargs["extent"] = [lonmin, lonmax, latmin, latmax]
+        except:
+            map_kwargs["extent"] = None
     if "crs" not in map_kwargs:
         map_kwargs["crs"] = proj
 
@@ -900,7 +907,7 @@ def make_spatial_bias_gridded(
     states = fig_dict.get("states", True)
     counties = fig_dict.get("counties", False)
     ax = monet.plots.mapgen.draw_map(
-        crs=map_kwargs["crs"], extent=map_kwargs["extent"], states=states, counties=counties
+        crs=map_kwargs["crs"], extent=map_kwargs.get("extent", None), states=states, counties=counties
     )
     # draw scatter plot of model and satellite differences
     # c = ax.axes.scatter(
@@ -913,7 +920,8 @@ def make_spatial_bias_gridded(
         f" {dset['time'][0].values.astype(str)[:16]}$-${dset['time'][-1].values.astype(str)[:16]}"
     )
     plt.title(title_add + label_m + " - " + label_o + timestamps, fontweight="bold", **text_kwargs)
-    ax.axes.set_extent(map_kwargs["extent"], crs=ccrs.PlateCarree())
+    if map_kwargs['extent'] is not None:
+        ax.axes.set_extent(map_kwargs["extent"], crs=ccrs.PlateCarree())
 
     # Uncomment these lines if you update above just to verify colorbars are identical.
     # Also specify plot above scatter = ax.axes.scatter etc.
