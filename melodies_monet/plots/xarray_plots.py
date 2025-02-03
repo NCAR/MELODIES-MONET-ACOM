@@ -685,10 +685,11 @@ def make_spatial_dist(
         lonmin, lonmax = dset["longitude"].min(), dset["longitude"].max()
         title_add = ""
     else:
-        # latmin = -90
-        # lonmin = -180
-        # latmax = 90
-        # lonmax = 180
+        valid_domain = dset.where(dset[varname].notnull(), drop=True)
+        latmin = valid_domain["latitude"].min().values
+        lonmin = valid_domain["longitude"].min().values
+        latmax = valid_domain["latitude"].max().values
+        lonmax = valid_domain["longitude"].max().values
         title_add = domain_name + ": "
 
     # Map the model output first.
