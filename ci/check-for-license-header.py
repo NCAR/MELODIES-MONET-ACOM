@@ -7,7 +7,6 @@ here = Path(__file__).parent
 mm_lib = (here / "../melodies_monet").resolve()
 
 header = """\
-# Copyright (C) 2022 National Center for Atmospheric Research and National Oceanic and Atmospheric Administration
 # SPDX-License-Identifier: Apache-2.0
 #
 """

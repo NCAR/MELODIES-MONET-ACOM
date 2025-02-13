@@ -1,4 +1,3 @@
-# Copyright (C) 2022 National Center for Atmospheric Research and National Oceanic and Atmospheric Administration 
 # SPDX-License-Identifier: Apache-2.0
 #
 """
@@ -160,28 +159,13 @@ class observation:
         from .util import analysis_util
         from .util import read_grid_util
 
-        time_chunking_with_gridded_data \
-            = 'time_chunking_with_gridded_data' in control_dict['analysis'].keys() \
-                and control_dict['analysis']['time_chunking_with_gridded_data']
-
-        if time_chunking_with_gridded_data:
-            date_str = time_interval[0].strftime('%Y-%m-%b-%d-%j')
-            print('obs time chunk %s' % date_str)
-            obs_vars = analysis_util.get_obs_vars(control_dict)
-            print(obs_vars)
-            obs_datasets, filenames = read_grid_util.read_grid_obs(
-                control_dict, obs_vars, date_str, obs=self.obs)
-            print(filenames)
-            self.obj = obs_datasets[self.obs]
-
+        if self.file.startswith("example:"):
+            example_id = ":".join(s.strip() for s in self.file.split(":")[1:])
+            files = [tutorial.fetch_example(example_id)]
         else:
-            if self.file.startswith("example:"):
-                example_id = ":".join(s.strip() for s in self.file.split(":")[1:])
-                files = [tutorial.fetch_example(example_id)]
-            else:
-                files = sort(glob(self.file))
+            files = sort(glob(self.file))
 
-            assert len(files) >= 1, "need at least one"
+        assert len(files) >= 1, "need at least one"
 
             _, extension = os.path.splitext(files[0])
             try:
@@ -202,10 +186,19 @@ class observation:
                     assert len(files) == 1, "MELODIES-MONET can only read one excel file"
                     self.obj = control_reading_excel(files[0], self.obs_type, self.site_dict)
                 else:
-                    raise ValueError(f'extension {extension!r} currently unsupported')
-            except Exception as e:
-                print('something happened opening file:', e)
-                return
+                    self.obj = xr.open_dataset(files[0])
+            elif extension in ['.ict', '.icartt']:
+                assert len(files) == 1, "monetio.icartt.add_data can only read one file"
+                self.obj = mio.icartt.add_data(files[0])
+            elif extension in ['.csv']:
+                from .util.read_util import read_aircraft_obs_csv
+                assert len(files) == 1, "MELODIES-MONET can only read one csv file"
+                self.obj = read_aircraft_obs_csv(filename=files[0],time_var=self.time_var)
+            else:
+                raise ValueError(f'extension {extension!r} currently unsupported')
+        except Exception as e:
+            print('something happened opening file:', e)
+            return
         
         self.add_coordinates_ground() # If ground site then add coordinates based on yaml if necessary
         self.mask_and_scale()  # mask and scale values from the control values
@@ -539,10 +532,6 @@ class model:
 
         print(self.model.lower())
 
-        time_chunking_with_gridded_data \
-            = 'time_chunking_with_gridded_data' in control_dict['analysis'].keys() \
-                and control_dict['analysis']['time_chunking_with_gridded_data']
-
         self.glob_files()
         # Calculate species to input into MONET, so works for all mechanisms in wrfchem
         # I want to expand this for the other models too when add aircraft data.
@@ -559,80 +548,73 @@ class model:
                 list_input_var = list_input_var + list(set(self.mapping[obs_map].keys()) - set(list_input_var))
         #Only certain models need this option for speeding up i/o.
 
-        if time_chunking_with_gridded_data:
-            date_str = time_interval[0].strftime('%Y-%m-%b-%d-%j')
-            print('model time chunk %s' % date_str)
-            model_datasets, filenames = read_grid_util.read_grid_models(
-                control_dict, date_str, model=self.label)
-            print(filenames)
-            self.obj = model_datasets[self.label]
-        else:
-            if 'cmaq' in self.model.lower():
-                print('**** Reading CMAQ model output...')
-                self.mod_kwargs.update({'var_list' : list_input_var})
-                if self.files_vert is not None:
-                    self.mod_kwargs.update({'fname_vert' : self.files_vert})
-                if self.files_surf is not None:
-                    self.mod_kwargs.update({'fname_surf' : self.files_surf})
-                if len(self.files) > 1:
-                    self.mod_kwargs.update({'concatenate_forecasts' : True})
-                self.obj = mio.models._cmaq_mm.open_mfdataset(self.files,**self.mod_kwargs)
-            elif 'wrfchem' in self.model.lower():
-                print('**** Reading WRF-Chem model output...')
-                self.mod_kwargs.update({'var_list' : list_input_var})
-                self.obj = mio.models._wrfchem_mm.open_mfdataset(self.files,**self.mod_kwargs)
-            elif 'rrfs' in self.model.lower():
-                print('**** Reading RRFS-CMAQ model output...')
-                if self.files_pm25 is not None:
-                    self.mod_kwargs.update({'fname_pm25' : self.files_pm25})
-                self.mod_kwargs.update({'var_list' : list_input_var})
-                self.obj = mio.models._rrfs_cmaq_mm.open_mfdataset(self.files,**self.mod_kwargs)
-            elif 'gsdchem' in self.model.lower():
-                print('**** Reading GSD-Chem model output...')
-                if len(self.files) > 1:
-                    self.obj = mio.fv3chem.open_mfdataset(self.files,**self.mod_kwargs)
-                else:
-                    self.obj = mio.fv3chem.open_dataset(self.files,**self.mod_kwargs)
-            elif 'cesm_fv' in self.model.lower():
-                print('**** Reading CESM FV model output...')
-                self.mod_kwargs.update({'var_list' : list_input_var})
-                self.obj = mio.models._cesm_fv_mm.open_mfdataset(self.files,**self.mod_kwargs)
-            # CAM-chem-SE grid or MUSICAv0
-            elif 'cesm_se' in self.model.lower(): 
-                print('**** Reading CESM SE model output...')
-                self.mod_kwargs.update({'var_list' : list_input_var})
-                if self.scrip_file.startswith("example:"):
-                    from . import tutorial
-                    example_id = ":".join(s.strip() for s in self.scrip_file.split(":")[1:])
-                    self.scrip_file = tutorial.fetch_example(example_id)
-                self.mod_kwargs.update({'scrip_file' : self.scrip_file})            
-                self.obj = mio.models._cesm_se_mm.open_mfdataset(self.files,**self.mod_kwargs)
-                #self.obj, self.obj_scrip = read_cesm_se.open_mfdataset(self.files,**self.mod_kwargs)
-                #self.obj.monet.scrip = self.obj_scrip      
-            elif "camx" in self.model.lower():
-                self.mod_kwargs.update({"var_list": list_input_var})
-                self.mod_kwargs.update({"surf_only": control_dict['model'][self.label].get('surf_only', False)})
-                self.mod_kwargs.update({"fname_met_3D": control_dict['model'][self.label].get('files_vert', None)})
-                self.mod_kwargs.update({"fname_met_2D": control_dict['model'][self.label].get('files_met_surf', None)})
-                self.obj = mio.models._camx_mm.open_mfdataset(self.files, **self.mod_kwargs)
-            elif 'raqms' in self.model.lower():
-                if time_interval is not None:
-                    # fill filelist with subset
-                    print('subsetting model files to interval')
-                    file_list = tsub.subset_model_filelist(self.files,'%m_%d_%Y_%HZ','6H',time_interval)
-                else:
-                    file_list = self.files
-                if len(file_list) > 1:
-                    self.obj = mio.models.raqms.open_mfdataset(file_list,**self.mod_kwargs)
-                else:
-                    self.obj = mio.models.raqms.open_dataset(file_list)
-
+        if 'cmaq' in self.model.lower():
+            print('**** Reading CMAQ model output...')
+            self.mod_kwargs.update({'var_list' : list_input_var})
+            if self.files_vert is not None:
+                self.mod_kwargs.update({'fname_vert' : self.files_vert})
+            if self.files_surf is not None:
+                self.mod_kwargs.update({'fname_surf' : self.files_surf})
+            if len(self.files) > 1:
+                self.mod_kwargs.update({'concatenate_forecasts' : True})
+            self.obj = mio.models._cmaq_mm.open_mfdataset(self.files,**self.mod_kwargs)
+        elif 'wrfchem' in self.model.lower():
+            print('**** Reading WRF-Chem model output...')
+            self.mod_kwargs.update({'var_list' : list_input_var})
+            self.obj = mio.models._wrfchem_mm.open_mfdataset(self.files,**self.mod_kwargs)
+        elif 'rrfs' in self.model.lower():
+            print('**** Reading RRFS-CMAQ model output...')
+            if self.files_pm25 is not None:
+                self.mod_kwargs.update({'fname_pm25' : self.files_pm25})
+            self.mod_kwargs.update({'var_list' : list_input_var})
+            self.obj = mio.models._rrfs_cmaq_mm.open_mfdataset(self.files,**self.mod_kwargs)
+        elif 'gsdchem' in self.model.lower():
+            print('**** Reading GSD-Chem model output...')
+            if len(self.files) > 1:
+                self.obj = mio.fv3chem.open_mfdataset(self.files,**self.mod_kwargs)
             else:
-                print('**** Reading Unspecified model output. Take Caution...')
-                if len(self.files) > 1:
-                    self.obj = xr.open_mfdataset(self.files,**self.mod_kwargs)
-                else:
-                    self.obj = xr.open_dataset(self.files[0],**self.mod_kwargs)
+                self.obj = mio.fv3chem.open_dataset(self.files,**self.mod_kwargs)
+        elif 'cesm_fv' in self.model.lower():
+            print('**** Reading CESM FV model output...')
+            self.mod_kwargs.update({'var_list' : list_input_var})
+            self.obj = mio.models._cesm_fv_mm.open_mfdataset(self.files,**self.mod_kwargs)
+        # CAM-chem-SE grid or MUSICAv0
+        elif 'cesm_se' in self.model.lower(): 
+            print('**** Reading CESM SE model output...')
+            self.mod_kwargs.update({'var_list' : list_input_var})
+            if self.scrip_file.startswith("example:"):
+                from . import tutorial
+                example_id = ":".join(s.strip() for s in self.scrip_file.split(":")[1:])
+                self.scrip_file = tutorial.fetch_example(example_id)
+            self.mod_kwargs.update({'scrip_file' : self.scrip_file})            
+            self.obj = mio.models._cesm_se_mm.open_mfdataset(self.files,**self.mod_kwargs)
+            #self.obj, self.obj_scrip = read_cesm_se.open_mfdataset(self.files,**self.mod_kwargs)
+            #self.obj.monet.scrip = self.obj_scrip      
+        elif "camx" in self.model.lower():
+            self.mod_kwargs.update({"var_list": list_input_var})
+            self.mod_kwargs.update({"surf_only": control_dict['model'][self.label].get('surf_only', False)})
+            self.mod_kwargs.update({"fname_met_3D": control_dict['model'][self.label].get('files_vert', None)})
+            self.mod_kwargs.update({"fname_met_2D": control_dict['model'][self.label].get('files_met_surf', None)})
+            self.obj = mio.models._camx_mm.open_mfdataset(self.files, **self.mod_kwargs)
+        elif 'raqms' in self.model.lower():
+            if time_interval is not None:
+                # fill filelist with subset
+                print('subsetting model files to interval')
+                file_list = tsub.subset_model_filelist(self.files,'%m_%d_%Y_%HZ','6H',time_interval)
+            else:
+                file_list = self.files
+            if len(file_list) > 1:
+                self.obj = mio.models.raqms.open_mfdataset(file_list,**self.mod_kwargs)
+            else:
+                self.obj = mio.models.raqms.open_dataset(file_list)
+
+        else:
+            print('**** Reading Unspecified model output. Take Caution...')
+            if len(self.files) > 1:
+                self.obj = xr.open_mfdataset(self.files,**self.mod_kwargs)
+            else:
+                self.obj = xr.open_dataset(self.files[0],**self.mod_kwargs)
+
         self.mask_and_scale()
         self.rename_vars() # rename any variables as necessary 
         self.sum_variables()
@@ -737,7 +719,6 @@ class analysis:
         self.debug = False
         self.save = None
         self.read = None
-        self.time_chunking_with_gridded_data = False  # Default to False
         self.regrid = False  # Default to False
         self.target_grid = None
         self.obs_regridders = None
@@ -823,9 +804,6 @@ class analysis:
         if 'add_logo' in self.control_dict['analysis'].keys():
             self.add_logo = self.control_dict['analysis']['add_logo']
 
-        # set time_chunking_with_gridded_data option, regrid option, and target_grid
-        if 'time_chunking_with_gridded_data' in self.control_dict['analysis'].keys():
-            self.time_chunking_with_gridded_data = self.control_dict['analysis']['time_chunking_with_gridded_data']
         if 'regrid' in self.control_dict['analysis'].keys():
             self.regrid = self.control_dict['analysis']['regrid']
         if 'target_grid' in self.control_dict['analysis'].keys():
