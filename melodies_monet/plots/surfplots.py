@@ -579,7 +579,10 @@ def make_diurnal_cycle(df, column=None, label=None, ax=None, avg_window=None, yl
         # plot the line
     else:
         plot_kwargs = { **dict(linestyle='-', marker='*', linewidth=1.2, markersize=6.), **plot_dict}
-    time = pd.DatetimeIndex(df["time"])
+    if df.index.name=='time':
+        time = df.index
+    else:
+        time = pd.DatetimeIndex(df["time"])
     df_plot_group = df.groupby(time.hour)
     df_plot = df_plot_group.median(numeric_only=True)
     ax = df_plot[column].plot(ax=ax, legend=True, **plot_kwargs) 
@@ -815,13 +818,13 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     vmodel_mean = vmodel[column_m].mean(dim='time').squeeze()
     
     #Determine the domain
-    if domain_type == 'all':
+    if domain_type == 'all' and domain_name == 'CONUS':
         latmin= 25.0
         lonmin=-130.0
         latmax= 50.0
         lonmax=-60.0
         title_add = domain_name + ': '
-    elif domain_type == 'epa_region' and domain_name is not None:
+    elif (domain_type == 'epa_region' or domain_type == 'auto-region:epa') and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
     else:
