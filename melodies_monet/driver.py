@@ -167,11 +167,23 @@ class observation:
 
         assert len(files) >= 1, "need at least one"
 
-        _, extension = os.path.splitext(files[0])
-        try:
-            if extension in {'.nc', '.ncf', '.netcdf', '.nc4'}:
-                if len(files) > 1:
-                    self.obj = xr.open_mfdataset(files)
+            _, extension = os.path.splitext(files[0])
+            try:
+                if extension in {'.nc', '.ncf', '.netcdf', '.nc4'}:
+                    if len(files) > 1:
+                        self.obj = xr.open_mfdataset(files)
+                    else:
+                        self.obj = xr.open_dataset(files[0])
+                elif extension in ['.ict', '.icartt']:
+                    assert len(files) == 1, "monetio.icartt.add_data can only read one file"
+                    self.obj = mio.icartt.add_data(files[0])
+                elif extension in ['.csv']:
+                    from .util.read_util import read_aircraft_obs_csv
+                    assert len(files) == 1, "MELODIES-MONET can only read one csv file"
+                    self.obj = read_aircraft_obs_csv(filename=files[0],time_var=self.time_var)
+                elif extension in ['xls', 'xlsx']:
+                    from .util.read_util import control_reading_excel
+                    self.obj = control_reading_excel(files, self.obs_type, self.variable_dict)
                 else:
                     self.obj = xr.open_dataset(files[0])
             elif extension in ['.ict', '.icartt']:
