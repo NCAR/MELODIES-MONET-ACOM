@@ -532,7 +532,8 @@ def calc_partialcolumn(modobj, var="NO2"):
         DataArray containing the partial column of the species.
     """
     ppbv2molmol = 1e-9
-    m2_to_cm2 = 1e4 fac_units = ppbv2molmol * N_A / m2_to_cm2
+    m2_to_cm2 = 1e4
+    fac_units = ppbv2molmol * N_A / m2_to_cm2
     partial_col = (
         modobj[var]
         * modobj["pres_pa_mid"]
