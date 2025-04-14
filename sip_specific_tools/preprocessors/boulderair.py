@@ -168,7 +168,7 @@ def _read_data(data_path, resample_freq=None, method="inst"):
 
     resampled = data.resample(resample_freq)
     if method == "inst":
-        sampled_data = resampled.interpolate(method="spline", order=1)
+        sampled_data = resampled.interpolate(method="linear")
     elif method == "min":
         sampled_data = resampled.min()
     elif method == "max":
