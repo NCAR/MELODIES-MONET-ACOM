@@ -249,7 +249,7 @@ def get_utcoffset(lat,lon):
 def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=None, 
                       label_m=None, ylabel = None, ptile = None, vdiff=None,
                       outname = 'plot', 
-                      domain_type=None, domain_name=None, fig_dict=None, 
+                      domain_type=None, domain_name=None, domain_info=None, fig_dict=None, 
                       text_dict=None,debug=False):
         
     """Creates surface spatial bias plot. 
@@ -356,6 +356,8 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
     elif domain_type == 'epa_region' and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         plt.title('EPA Region ' + domain_name + ': ' + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
+    # elif domain_type == "custom:box":
+    #     latmin, lonmin, latmax, lonmax = domain_info[domain_name][bounds]
     else:
         latmin= math.floor(min(df.latitude))
         lonmin= math.floor(min(df.longitude))
@@ -579,10 +581,8 @@ def make_diurnal_cycle(df, column=None, label=None, ax=None, avg_window=None, yl
         # plot the line
     else:
         plot_kwargs = { **dict(linestyle='-', marker='*', linewidth=1.2, markersize=6.), **plot_dict}
-    if df.index.name=='time':
-        time = df.index
-    else:
-        time = pd.DatetimeIndex(df["time"])
+
+    time = df.index
     df_plot_group = df.groupby(time.hour)
     df_plot = df_plot_group.median(numeric_only=True)
     ax = df_plot[column].plot(ax=ax, legend=True, **plot_kwargs) 
@@ -742,7 +742,7 @@ def make_taylor(df, df_reg=None, column_o=None, label_o='Obs', column_m=None, la
 def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None, 
                       label_m=None, ylabel = None, vmin=None,
                       vmax = None, nlevels = None, proj = None, outname = 'plot', 
-                      domain_type=None, domain_name=None, fig_dict=None, 
+                      domain_type=None, domain_name=None, domain_info=None, fig_dict=None, 
                       text_dict=None,debug=False):
         
     """Creates spatial overlay plot. 
@@ -827,6 +827,8 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     elif (domain_type == 'epa_region' or domain_type == 'auto-region:epa') and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
+    # elif domain_type == "custom:box":
+    #     latmin, lonmin, latmax, lonmax = domain_info[domain_name]["bounds"]
     else:
         latmin= math.floor(min(df.latitude))
         lonmin= math.floor(min(df.longitude))
