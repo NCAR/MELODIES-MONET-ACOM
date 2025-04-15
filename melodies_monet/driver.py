@@ -1201,6 +1201,7 @@ class analysis:
                         start_hour,
                         self.models[model_label].data_proc['average']['nhours']
                     )
+                    self.models[model_label].obj = model_obj
 
                 # pair the data
                 # if pt_sfc (surface point network or monitor)
