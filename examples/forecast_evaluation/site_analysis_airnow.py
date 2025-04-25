@@ -27,7 +27,7 @@ region_type = ["epa_region", "epa_region", "epa_region", "epa_region", "epa_regi
 #open the obs data using xarray
 data = xr.open_dataset('test5.nc') #this script needs to be after the test5 file has been created for the day but before the control yaml file has been created
 
-#seperate out the site data 
+#separate out the site data 
 site = data['site']
 
 #define an array to read the sites into
@@ -56,10 +56,10 @@ for r in range(len(region_name)):
 #uncomment if you want an array of all sites in the region
 #print(sitesinregion)
 
-##selects the sites with data available for a specified species in a specifiec region
+##selects the sites with data available for a specified species in a specified region
 #selects only the data on the hour
 
-#seperate out the species and time data
+#separate out the species and time data
 species = data[species_name]
 time_local = data['time_local']
 latitude = data['latitude']
@@ -124,7 +124,7 @@ for i in xregion:
         #finds the total length of data
         len_total = len(species_values)
 
-        #finds the percent of the data avaiable
+        #finds the percent of the data available
         if len_total > 0:
             percent_data = (len_notnull/len_total) * 100
         else:

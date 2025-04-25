@@ -865,7 +865,7 @@ def get_ish(
                     "station name": "station_name",
                     "elev(m)": "elevation",
                 },
-              errors="ignore",
+            errors="ignore",
             )
             .drop(columns=["elev"], errors="ignore")  # keep just elevation from the site meta file
         )

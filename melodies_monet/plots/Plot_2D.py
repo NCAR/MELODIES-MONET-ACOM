@@ -13,10 +13,8 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import matplotlib.cm as cm
 from cartopy.mpl.ticker import LongitudeFormatter, LatitudeFormatter
-from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from matplotlib.collections import PolyCollection
 import matplotlib
-from matplotlib import ticker
 
 class Plot_2D(object):
     
@@ -48,10 +46,10 @@ class Plot_2D(object):
                 if verbose:
                     print( '"var" is a xarray variable, longitude and latitude values ' + \
                            'are being automatically assigned by xarray dimension variables')
-                if lons != None:
+                if lons is not None:
                     print( 'Warning: "lons" is assigned but not used ' + \
                            'because xarray itself has longitude values')
-                if lats != None:
+                if lats is not None:
                     print( 'Warning: "lats" is assigned but not used ' + \
                            'because xarray itself has longitude values')                
                 self.var = np.copy( var.values )
@@ -109,14 +107,14 @@ class Plot_2D(object):
                     
         # Read scrip file in case of SE model output
         if self.model_type == 'SE':
-            if type(scrip_file) == xr.core.dataset.Dataset:
+            if isinstance(scrip_file, xr.Dataset):
                 ds_scrip = scrip_file
                 if verbose:
                     print( "use xarray dataset for scrip file" )
             else:
                 if scrip_file == "":
                     raise ValueError( '"scrip_file" must be specified for SE model output' )
-                if type(scrip_file) != str:
+                if not isinstance(scrip_file, str):
                     raise ValueError( '"scrip_file" must be provided as "string"' )
                 if verbose:
                     print( "Read SCRIP file:", scrip_file )
@@ -129,18 +127,17 @@ class Plot_2D(object):
 
             
         # Color map check
-        if cmap == None:
+        if cmap is None:
             if diff:
                 #self.cmap = cm.seismic
                 self.cmap = cm.bwr
             else:
                 self.cmap = cm.jet
-                self.cmap = Cmap.cmap
         else:
             self.cmap = cmap
         
         # axis check
-        if ax == None:
+        if ax is None:
             self.fig = plt.figure( figsize=(8,5) )
             ax = self.fig.add_subplot(1,1,1, projection=projection)
         else:
@@ -148,7 +145,7 @@ class Plot_2D(object):
         self.ax = ax
         
         # nticks check, assign the base value if None
-        if nticks == None:
+        if nticks is None:
             if log_scale:
                 self.nticks = 7
             else:
@@ -223,12 +220,12 @@ class Plot_2D(object):
 
         # automatically set longitude and latitude intervals        
         if self.lonlat_info:
-            if self.lon_interval == None:
+            if self.lon_interval is None:
                 lon_length = lon_range[1] - lon_range[0]
                 self.lon_interval = np.around( lon_length / 6. )
                 if self.lon_interval < 1:
                     self.lon_interval = 1
-            if self.lat_interval == None:
+            if self.lat_interval is None:
                 lat_length = lat_range[1] - lat_range[0]
                 self.lat_interval = np.around( lat_length / 6. )
                 if self.lat_interval < 1:
@@ -374,12 +371,12 @@ class Plot_2D(object):
         # set colorbar properties
         self.kwd_pretty_tick = {}
         if not self.log_scale:
-            if self.cmax == None:
+            if self.cmax is None:
                 self.cmax = np.max( self.var_slice )
             else:
                 self.kwd_pretty_tick['max_set'] = self.cmax
 
-            if self.cmin == None:
+            if self.cmin is None:
                 self.cmin = np.min( self.var_slice )
             else:
                 self.kwd_pretty_tick['min_set'] = self.cmin
@@ -389,7 +386,7 @@ class Plot_2D(object):
         if self.pretty_tick:
             if np.shape(self.colorticks) == ():
                 if self.log_scale:
-                    if self.cmin == None:
+                    if self.cmin is None:
                         self.cmin_od = \
                             np.floor(np.log10(np.abs(np.min( \
                                 self.var_slice[self.var_slice != 0]))))
@@ -397,7 +394,7 @@ class Plot_2D(object):
                     else:
                         self.cmin_od = np.floor(np.log10(np.abs(self.cmin))) 
                         self.cmin_sign = np.sign(self.cmin)
-                    if self.cmax == None:
+                    if self.cmax is None:
                         self.cmax_od = \
                             np.floor(np.log10(np.abs(np.max( \
                                 self.var_slice[self.var_slice != 0]))))
@@ -532,7 +529,7 @@ class Plot_2D(object):
                                     np.max( [self.cmin_od, self.cmax_od] ), \
                                     np.max( [self.cmin_od, self.cmax_od] )
 
-                            if self.log_scale_min == None:
+                            if self.log_scale_min is None:
                                 self.min_order = np.min( [self.cmin_od, self.cmax_od] )
                                 if self.min_order > 4:
                                     self.cmin_p = 10                           
@@ -684,7 +681,7 @@ class Plot_2D(object):
                     matplotlib.colors.SymLogNorm( linthresh=self.linthresh, 
                                                   linscale=self.linscale,
                                                   vmin=self.cmin, vmax=self.cmax )
-            except:                    
+            except Exception:                    
                 self.kwd_pcolormesh['norm'] = \
                     matplotlib.colors.SymLogNorm( linthresh=self.linthresh,
                                                   linscale=self.linscale,
@@ -754,7 +751,7 @@ class Plot_2D(object):
             self.ax.add_feature(cfeature.STATES.with_scale(self.resolution), 
                                 lw=self.feature_line_lw, edgecolor=self.feature_color )
         if self.lonlat_info:
-            if self.lon_labels==None:
+            if self.lon_labels is None:
                 self.lonticklabel = np.arange(self.lon_range[0],self.lon_range[1]+0.1,
                                               self.lon_interval)
             else:
@@ -767,7 +764,7 @@ class Plot_2D(object):
                 else:
                     self.lonticklabel = self.lon_labels
             
-            if self.lat_labels==None:
+            if self.lat_labels is None:
                 self.latticklabel = np.arange(self.lat_range[0],self.lat_range[1]+0.1,
                                               self.lat_interval)
             else:
@@ -834,7 +831,7 @@ class Plot_2D(object):
     # ========================================================================
 
     # ===== Defining __call__ method =====
-    def __call__(self):
+    def __call__(self, var):
         print( '=== var ===')
         print( np.shape(var) )
 
@@ -859,12 +856,12 @@ class get_cbar_prop(object):
         self.ranges = ranges
         
         # Calculate max value
-        if max_set == None:
+        if max_set is None:
             maxval = np.nanmax( arrays )
             self.maxval = maxval
         
         # Calculate min value
-        if min_set == None:
+        if min_set is None:
             minval = np.nanmin( arrays )
             self.minval = minval
         
@@ -895,7 +892,7 @@ class get_cbar_prop(object):
         self.plotmax = plotmax
         
         # Calculate plotmin
-        if min_set != None:
+        if min_set is not None:
             plotmin = min_set
             self.minval = plotmin
         else:
@@ -903,7 +900,7 @@ class get_cbar_prop(object):
         self.plotmin = plotmin
         
         
-        if Ntick_set == None:
+        if Ntick_set is None:
             
             # Set Nticks_list
             if not Nticks_list:
@@ -946,7 +943,6 @@ class get_cbar_prop(object):
         self.colorticks = colorticks
         self.colorlabels = colorlabels.astype('U')
 
-                       
     # Defining __call__ method 
     def __call__(self): 
         

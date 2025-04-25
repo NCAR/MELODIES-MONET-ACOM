@@ -107,11 +107,11 @@ def get_relhum(temp, press, vap):
 
 
 def long_to_wide(df):
-    from pandas import Series, merge
+    from pandas import merge
     w = df.pivot_table(values='obs',
                        index=['time', 'siteid'],
                        columns='variable').reset_index()
-    cols = Series(df.columns)
+    # cols = df.columns
     g = df.groupby('variable')
     for name, group in g:
         w[name + '_unit'] = group.units.unique()[0]
@@ -296,7 +296,7 @@ def resample_stratify(da, levels, vertical, axis=1,interpolation='linear',extrap
     return out
 
 def vert_interp(ds_model,df_obs,var_name_list):
-    from pandas import merge_asof, Series
+    from pandas import merge_asof
 
     ds_model['pressure_model_nan'] = ds_model['pressure_model'].copy()
     var_name_list.append('pressure_model_nan')
@@ -338,7 +338,7 @@ def vert_interp(ds_model,df_obs,var_name_list):
     return final_df_model
 
 def mobile_and_ground_pair(ds_model,df_obs, var_name_list):
-    from pandas import merge_asof, Series
+    from pandas import merge_asof
     
     var_out_list = []
     # Extract just the surface level data from correct model variables
@@ -373,7 +373,7 @@ def find_obs_time_bounds(files=[],time_var=None):
         str or list of str containing filenames that should be read.
         
     time_var : str
-        Optional, variable name that should be assumed to be time when reading aircaft csv files.
+        Optional, variable name that should be assumed to be time when reading aircraft csv files.
 
     Returns
     -------
@@ -481,7 +481,7 @@ def convert_std_to_amb_ams(ds,convert_vars=[],temp_var=None,pres_var=None):
     # Units of pres_var must be Pa 
     
     #So I just need to convert the obs from std to amb.
-    Losch = 2.69e25 # loschmidt's number
+    # Losch = 2.69e25 # loschmidt's number
     #I checked the more detailed icart files
     #273 K, 1 ATM (101325 Pa)
     std_ams = 101325.*N_A/(R*273.)
@@ -502,7 +502,7 @@ def convert_std_to_amb_bc(ds,convert_vars=[],temp_var=None,pres_var=None):
     # Units of pres_var must be Pa 
     
     #So I just need to convert the obs from std to amb.
-    Losch = 2.69e25 # loschmidt's number
+    # Losch = 2.69e25 # loschmidt's number
     #1013 mb, 273 K (101300 Pa)
     std_bc = 101300.*N_A/(R*273.)
     #use pressure_obs now, which is in pa

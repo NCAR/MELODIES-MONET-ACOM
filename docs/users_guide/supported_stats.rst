@@ -2,7 +2,7 @@ Supported Statistics
 ====================
 
 Supported statistics including the abbreviation used in the "stat_list" of the 
-input YAML file are listed in the table below. Satistics are performed over the
+input YAML file are listed in the table below. Statistics are performed over the
 entire analysis window with options to specify the domain. By default, results
 are saved to .csv file and optionally users can select to save results to a table
 figure.

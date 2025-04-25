@@ -8,7 +8,6 @@
 import matplotlib
 matplotlib.use('Agg')
 from melodies_monet import driver
-import os
 import dask
 import sys
 

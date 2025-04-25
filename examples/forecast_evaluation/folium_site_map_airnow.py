@@ -7,7 +7,6 @@ import folium
 import base64
 from folium import IFrame
 from PIL import Image
-import numpy as np
 import xarray as xr
 import sys
 
@@ -80,7 +79,7 @@ for i in range(len(site_name)):
     png = path + plot_name + "_resize.png"
     encoded = base64.b64encode(open(png, 'rb').read())
 
-    #formating the encoded plot as html
+    #formatting the encoded plot as html
     html = '<img src="data:image/png;base64,{}">'.format
 
     #decoding the plot into an iframe

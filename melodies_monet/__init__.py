@@ -19,7 +19,7 @@ __all__ = [__version__] + _submodules
 
 
 if sys.version_info < (3, 7):
-    from . import driver, plots, stats, util, tutorial
+    from . import driver, plots, stats, util, tutorial  # noqa: F401
 
 else:
     # Lazy imports

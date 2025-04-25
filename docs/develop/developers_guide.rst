@@ -192,7 +192,7 @@ Code workflow
 -------------
 
 The way the code is constructed (see :doc:`../getting_started/software_architecture`)
-is based largely on code contained within a driver (``dirver.py``).
+is based largely on code contained within a driver (``driver.py``).
 The main class, contained in ``driver.py``, is ``analysis``.
 ``analysis`` is in charge of creating and managing all other classes.
 This driver contains the ``observation``, ``model`` and ``pair`` classes,

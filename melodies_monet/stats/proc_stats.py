@@ -3,20 +3,18 @@
 
 #Simple MONET utility to calculate statistics from paired hdf file
 
-import os
-from glob import glob
-import sys
-
-import subprocess
-from distutils.spawn import find_executable
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-
-import monet  
-from monet.util.tools import calc_8hr_rolling_max,calc_24hr_ave,get_relhum
-from monet.util.stats import STDO, STDP, MNB, MNE, MdnNB, MdnNE, NMdnGE, NO, NOP, NP, MO, MP, MdnO, MdnP, RM, RMdn, MB, MdnB, NMB, NMdnB, FB, ME, MdnE,NME, NMdnE, FE, MNPB, MdnNPB, MNPE, MdnNPE, NMPB, NMdnPB, NMPE, NMdnPE, R2, RMSE, d1, E1, IOA, AC, HSS, ETS, WDMB, WDMdnB, WDNMB_m, WDME, WDMdnE, WDRMSE, WDIOA, WDAC
-import pandas as pd
+import monet  # noqa: F401
+from monet.util.stats import (
+    STDO, STDP, MNB, MNE, MdnNB, MdnNE, NMdnGE, NO, NOP, NP, MO, MP,
+    MdnO, MdnP, RM, RMdn, MB, MdnB, NMB, NMdnB, FB, ME, MdnE,NME, NMdnE,
+    FE,
+    # MNPB, MdnNPB, MNPE, MdnNPE, NMPB, NMdnPB, NMPE, NMdnPE,
+    R2, RMSE,
+    d1, E1, IOA, AC,
+    # HSS, ETS,
+    WDMB, WDMdnB, WDNMB_m, WDME, WDMdnE, WDRMSE, WDIOA, WDAC
+)
 import numpy as np
-from numpy import sqrt
 import matplotlib.pyplot as plt
 from ..plots import savefig
 
@@ -72,7 +70,7 @@ def produce_stat_dict(stat_list,spaces=False):
                       'AC' : 'Anomaly Correlation'}
     stat_fullname_list = []
     for stat_id in stat_list:
-        if spaces == False:
+        if spaces is False:
             stat_fullname_list.append(dict_stats_def[stat_id].replace(" ", "_"))
         else:
             stat_fullname_list.append(dict_stats_def[stat_id])
@@ -94,7 +92,7 @@ def calc(df,stat=None,obsvar=None,modvar=None,wind=False):
         Column label of observation variable
     modvar : str
         Column label of model variable
-    wind : boolean
+    wind : bool
         If variable is wind MONET applies a special calculation to handle 
         negative and positive values. If wind (True) if not wind (False).
         
@@ -142,17 +140,17 @@ def calc(df,stat=None,obsvar=None,modvar=None,wind=False):
     elif stat == 'RMdn':
         value = RMdn(obs,mod,axis=None)
     elif stat == 'MB':
-        if wind == True:
+        if wind is True:
             value = WDMB(obs,mod,axis=None)
         else:
             value = MB(obs,mod,axis=None)
     elif stat == 'MdnB':
-        if wind == True:
+        if wind is True:
             value = WDMdnB(obs,mod,axis=None)
         else:
             value = MdnB(obs,mod,axis=None)
     elif stat == 'NMB':
-        if wind == True:
+        if wind is True:
             value = WDNMB_m(obs,mod,axis=None)
         else:
             value = NMB(obs,mod,axis=None)
@@ -161,12 +159,12 @@ def calc(df,stat=None,obsvar=None,modvar=None,wind=False):
     elif stat == 'FB':
         value = FB(obs,mod,axis=None)
     elif stat == 'ME':
-        if wind == True:
+        if wind is True:
             value = WDME(obs,mod,axis=None)
         else:
             value = ME(obs,mod,axis=None)
     elif stat == 'MdnE':
-        if wind == True:
+        if wind is True:
             value = WDMdnE(obs,mod,axis=None)
         else:
             value = MdnE(obs,mod,axis=None)
@@ -179,7 +177,7 @@ def calc(df,stat=None,obsvar=None,modvar=None,wind=False):
     elif stat == 'R2':
         value = R2(obs,mod,axis=None)
     elif stat == 'RMSE':
-        if wind == True: 
+        if wind is True: 
             value = WDRMSE(obs,mod,axis=None)
         else:
             value = RMSE(obs,mod,axis=None)
@@ -188,12 +186,12 @@ def calc(df,stat=None,obsvar=None,modvar=None,wind=False):
     elif stat == 'E1':
         value = E1(obs,mod,axis=None)
     elif stat == 'IOA':
-        if wind == True: 
+        if wind is True: 
             value = WDIOA(obs,mod,axis=None)
         else:
             value = IOA(obs,mod,axis=None)
     elif stat == 'AC':
-        if wind == True:
+        if wind is True:
             value = WDAC(obs,mod,axis=None)
         else:
             value = AC(obs,mod,axis=None)
@@ -229,7 +227,7 @@ def create_table(df,outname='plot',title='stats',out_table_kwargs=None,debug=Fal
         specified in the input yaml file.
 
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     #Define defaults if not provided:

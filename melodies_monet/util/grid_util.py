@@ -178,7 +178,7 @@ def generate_uniform_grid(start, end, ntime, nlat, nlon):
     time_grid = 0.5 * (time_edges[0:ntime] + time_edges[1:ntime+1])
     lat_edges = np.linspace(-90, 90, nlat+1, endpoint=True, dtype=float)
     lat_grid = 0.5 * (lat_edges[0:nlat] + lat_edges[1:nlat+1])
-    lat_min, lat_max = lat_edges[0:nlat], lat_edges[1:nlat+1]
+    # lat_min, lat_max = lat_edges[0:nlat], lat_edges[1:nlat+1]
     lon_edges = np.linspace(lon0, lon0 + 360, nlon+1, endpoint=True, dtype=float)
     lon_grid = 0.5 * (lon_edges[0:nlon] + lon_edges[1:nlon+1])
 

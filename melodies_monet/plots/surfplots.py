@@ -2,12 +2,8 @@
 #
 #Code to create plots for surface observations
 
-import os
-import monetio as mio
 import monet as monet
 import seaborn as sns
-from monet.util.tools import calc_8hr_rolling_max, calc_24hr_ave
-import xarray as xr
 import pandas as pd
 import numpy as np
 import cartopy.crs as ccrs
@@ -20,7 +16,6 @@ from matplotlib.colors import ListedColormap
 from monet.util.tools import get_epa_region_bounds as get_epa_bounds 
 import math
 from ..plots import savefig
-import warnings
 
 def make_24hr_regulatory(df, col=None):
     """Calculates 24-hour averages
@@ -153,7 +148,11 @@ def map_projection(m, *, model_name=None):
             elif isinstance(m.proj, ccrs.Projection):
                 return m.proj
             else:
-                raise TypeError(f"`model.proj` should be None or `ccrs.Projection` instance.")
+                raise TypeError(
+                    "`model.proj` should be None or str starting with 'model:' "
+                    "or `ccrs.Projection` instance. "
+                    f"Got {type(m.proj)}."
+                )
     else:
         mod = model_name
 
@@ -202,8 +201,7 @@ def get_utcoffset(lat,lon):
     UTC offset in hour
 
     """
-    import datetime, pytz
-    from datetime import datetimee, timezone
+    import datetime
     import pytz
     from timezonefinder import TimezoneFinder
 
@@ -294,7 +292,7 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
         surface bias plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     def_map = dict(states=True,figsize=[10, 5])
@@ -432,7 +430,7 @@ def make_timeseries(df, df_reg=None, column=None, label=None, ax=None, avg_windo
         same plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     #First define items for all plots
     #set default text size
@@ -546,7 +544,7 @@ def make_diurnal_cycle(df, column=None, label=None, ax=None, avg_window=None, yl
         same plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     #First define items for all plots
     #set default text size
@@ -671,7 +669,7 @@ def make_taylor(df, df_reg=None, column_o=None, label_o='Obs', column_m=None, la
         
     """
     #First define items for all plots
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     #set default text size
@@ -791,7 +789,7 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
         spatial overlay plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     def_map = dict(states=True,figsize=[15, 8])
@@ -848,11 +846,11 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     #With pcolormesh, a Warning shows because nearest interpolation may not work for non-monotonically increasing regions.
     #Because I do not want to pull in the edges of the lat lon for every model I switch to contourf.
     #First determine colorbar, so can use the same for both contourf and scatter
-    if vmin == None and vmax == None:
+    if vmin is None and vmax is None:
         vmin = np.min((vmodel_mean.quantile(0.01), df_mean[column_o].quantile(0.01)))
         vmax = np.max((vmodel_mean.quantile(0.99), df_mean[column_o].quantile(0.99)))
         
-    if nlevels == None:
+    if nlevels is None:
         nlevels = 21
     
     clevel = np.linspace(vmin,vmax,nlevels)
@@ -867,7 +865,7 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
         fig = plt.figure( figsize=fig_dict['figsize'] )
         ax = fig.add_subplot(1,1,1,projection=proj)
         
-        p2d = Plot_2D( vmodel_mean, scrip_file=vmodel.mio_scrip_file, cmap=cmap, #colorticks=clevel, colorlabels=clevel,
+        _ = Plot_2D( vmodel_mean, scrip_file=vmodel.mio_scrip_file, cmap=cmap, #colorticks=clevel, colorlabels=clevel,
                        cmin=vmin, cmax=vmax, lon_range=[lonmin,lonmax], lat_range=[latmin,latmax],
                        ax=ax, state=fig_dict['states'] )
     else:
@@ -983,7 +981,7 @@ def calculate_multi_boxplot(df, df_reg=None, region_name= None,column=None, labe
     dataframe, list, dataframe           
         dataframe containing information to create box-plot
         list of string labels to use in box-plot
-        dataframe containing informaiton for regions to help create multi-box-plot
+        dataframe containing information for regions to help create multi-box-plot
         
     """
     region_bx = pd.DataFrame()
@@ -1060,7 +1058,7 @@ def make_boxplot(comb_bx, label_bx, ylabel = None, vmin = None, vmax = None, out
     plot 
         box plot
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     #First define items for all plots
     #set default text size
@@ -1073,7 +1071,7 @@ def make_boxplot(comb_bx, label_bx, ylabel = None, vmin = None, vmax = None, out
     if ylabel is None:
         ylabel = label_bx[0]['column']
 
-    #Fix the order and palate colors
+    #Fix the order and palette colors
     order_box = []
     pal = {}
     for i in range(len(label_bx)):
@@ -1165,7 +1163,7 @@ def make_multi_boxplot(comb_bx, label_bx,region_bx,region_list = None, model_nam
         multi-box plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     #First define items for all plots
     #set default text size
@@ -1178,13 +1176,20 @@ def make_multi_boxplot(comb_bx, label_bx,region_bx,region_list = None, model_nam
     if ylabel is None:
         ylabel = label_bx[0]['column']
     
-    #Fix the order and palate colors
+    #Fix the order and palette colors
     order_box = []
     pal = {}
     for i in range(len(label_bx)):
         order_box.append(label_bx[i]['label'])
         pal[label_bx[i]['label']] = label_bx[i]['color']
-        
+    #Use model_name_list names instead if we have
+    if model_name_list is None:
+        model_name_list = order_box
+    else:
+        for old_label, new_label in zip(order_box, model_name_list):
+            pal[new_label] = pal.pop(old_label)
+        order_box = model_name_list
+
     #Make plot
     if fig_dict is not None:
         f,ax = plt.subplots(**fig_dict)    
@@ -1201,7 +1206,7 @@ def make_multi_boxplot(comb_bx, label_bx,region_bx,region_list = None, model_nam
                                      markeredgecolor='none',
                                      markersize = 6.0),
                   'width': 0.75, 'palette': pal,
-                  'order': order_box,
+                  'hue_order': order_box,
                   'showmeans': True, 
                   'meanprops': {'marker': ".", 'markerfacecolor': 'black', 
                                 'markeredgecolor': 'black',
@@ -1224,10 +1229,11 @@ def make_multi_boxplot(comb_bx, label_bx,region_bx,region_list = None, model_nam
 
     tdf =pd.concat(to_concat)
     acro = region_list
-    sns.boxplot(x='Regions',y='Value',hue='model',data=tdf.loc[tdf.Regions.isin(acro)], order = acro, showfliers=False)
+    sns.boxplot(x='Regions',y='Value',hue='model',data=tdf.loc[tdf.Regions.isin(acro)],order=acro,showfliers=False,**boxplot_kwargs)
     ax.set_xlabel('')
     ax.set_ylabel(ylabel,fontweight='bold',**text_kwargs)
     ax.tick_params(labelsize=text_kwargs['fontsize']*0.8)
+    plt.legend(fontsize=text_kwargs['fontsize']*0.8)
     if domain_type is not None and domain_name is not None:
         if domain_type == 'epa_region':
             ax.set_title('EPA Region ' + domain_name,fontweight='bold',**text_kwargs)
@@ -1264,7 +1270,7 @@ def scorecard_step1_combine_df(df, df_reg=None, region_name=None, urban_rural_na
     dataframe, list, dataframe  
         dataframe containing information to create box-plot
         list of string labels to use in box-plot
-        dataframe containing informaiton for regions to help create multi-box-plot
+        dataframe containing information for regions to help create multi-box-plot
 
     """
     region_bx = pd.DataFrame()                   
@@ -1299,7 +1305,7 @@ def scorecard_step1_combine_df(df, df_reg=None, region_name=None, urban_rural_na
 
 def scorecard_step2_prepare_individual_df(comb_bx,region_bx,msa_bx,time_bx,model_name_list=None): 
 
-    len_combx = len(comb_bx.columns)
+    # len_combx = len(comb_bx.columns)
     data_obs = comb_bx[comb_bx.columns[0]].to_frame().rename({comb_bx.columns[0]:'Value'},axis=1)
     data_model1 = comb_bx[comb_bx.columns[1]].to_frame().rename({comb_bx.columns[1]:'Value'},axis=1)
     data_model2 = comb_bx[comb_bx.columns[2]].to_frame().rename({comb_bx.columns[2]:'Value'},axis=1)
@@ -1326,8 +1332,9 @@ def scorecard_step2_prepare_individual_df(comb_bx,region_bx,msa_bx,time_bx,model
 
     return output_obs, output_model1, output_model2
 
-from datetime import  datetime,timedelta
 def GetDateList(start_time_input,end_time_input):
+    from datetime import datetime, timedelta
+
     start_date_str = str(start_time_input).split(' ')[0]
     end_date_str = str(end_time_input).split(' ')[0]
     FMT='%Y-%m-%d'
@@ -1357,6 +1364,8 @@ def scorecard_step3_getLUC(region_name_input,ds_name,urban_rural_differentiate_v
     return rural_index_list, urban_index_list
 
 def scorecard_step4_GetRegionLUCDate(ds_name=None,region_list=None,datelist=None,urban_rural_differentiate_value=None):
+    from datetime import datetime
+
     Region_Date_Urban_list = [] #(region * date)
     Region_Date_Rural_list = [] #(region * date)
 
@@ -1413,8 +1422,8 @@ def scorecard_step5_KickNan(obs_input=None,model_input_1=None,model_input_2=None
             model1_output = []
             model2_output = []
             for i in range(len(obs_here_array[0])):
-                if math.isnan(float(obs_here_array[0][i])) == False:
-                    if math.isnan(float(model1_here_array[0][i])) == False:
+                if math.isnan(float(obs_here_array[0][i])) is False:
+                    if math.isnan(float(model1_here_array[0][i])) is False:
                         obs_output.append(obs_here_array[0][i])
                         model1_output.append(model1_here_array[0][i])
                         model2_output.append(model2_here_array[0][i])
@@ -1488,31 +1497,31 @@ def scorecard_step7_SigLevel(model1_input=None,model2_input=None):
     X1=  np.array(model1_input)
     X2=  np.array(model2_input)
 
-    #confidence interal 95% for model 1
+    #confidence interval 95% for model 1
     mean_X1 = np.mean(X1)
     STD_X1  = np.std(X1)
     lower_bd_X1_95 = mean_X1 - 1.96*(STD_X1/(len(X1))**0.5)
     upper_bd_X1_95 = mean_X1 + 1.96*(STD_X1/(len(X1))**0.5)
 
-    #confidence interal 95% for model 2
+    #confidence interval 95% for model 2
     mean_X2 = np.mean(X2)
     STD_X2  = np.std(X2)
     lower_bd_X2_95 = mean_X2 - 1.96*(STD_X2/(len(X2))**0.5)
     upper_bd_X2_95 = mean_X2 + 1.96*(STD_X2/(len(X2))**0.5)
 
-    #confidence interal 99% for model 1
+    #confidence interval 99% for model 1
     lower_bd_X1_99 = mean_X1 - 2.576*(STD_X1/(len(X1))**0.5)
     upper_bd_X1_99 = mean_X1 + 2.576*(STD_X1/(len(X1))**0.5)
 
-    #confidence interal 99% for model 2
+    #confidence interval 99% for model 2
     lower_bd_X2_99 = mean_X2 - 2.576*(STD_X2/(len(X2))**0.5)
     upper_bd_X2_99 = mean_X2 + 2.576*(STD_X2/(len(X2))**0.5)
 
-    #confidence interal 99.9% for model 1
+    #confidence interval 99.9% for model 1
     lower_bd_X1_999 = mean_X1 - 3.291*(STD_X1/(len(X1))**0.5)
     upper_bd_X1_999 = mean_X1 + 3.291*(STD_X1/(len(X1))**0.5)
  
-    #confidence interal 99.9% for model 2
+    #confidence interval 99.9% for model 2
     lower_bd_X2_999 = mean_X2 - 3.291*(STD_X2/(len(X2))**0.5)
     upper_bd_X2_999 = mean_X2 + 3.291*(STD_X2/(len(X2))**0.5)
 
@@ -1660,7 +1669,7 @@ def Calc_Score(score_name_input,threshold_input, model_input, obs_input):
    
     return output_score
 
-def Plot_CSI(score_name_input,threshold_list_input, comb_bx_input,plot_dict,fig_dict,text_dict,domain_type,domain_name,model_name_list,threshold_tick_style):
+def Plot_CSI(column,score_name_input,threshold_list_input, comb_bx_input,plot_dict,fig_dict,text_dict,domain_type,domain_name,model_name_list,threshold_tick_style):
 
     CSI_output = []  #(2, threshold len)
     threshold_list = threshold_list_input
@@ -1700,7 +1709,7 @@ def Plot_CSI(score_name_input,threshold_list_input, comb_bx_input,plot_dict,fig_
         ax.set_ylabel(score_name_input,fontsize = text_kwargs['fontsize']*0.8)
         ax.tick_params(labelsize=text_kwargs['fontsize']*0.8)
         plt.ylim(0,1)
-        plt.legend()
+        plt.legend(fontsize=text_kwargs['fontsize']*0.6)
         plt.grid()
      
     #add '>' to xticks
@@ -1714,9 +1723,9 @@ def Plot_CSI(score_name_input,threshold_list_input, comb_bx_input,plot_dict,fig_
 
     if domain_type is not None and domain_name is not None:
         if domain_type == 'epa_region':
-            ax.set_title('EPA Region ' + domain_name,fontweight='bold',**text_kwargs)
+            ax.set_title(column+' EPA Region ' + domain_name,fontweight='bold',**text_kwargs)
         else:
-            ax.set_title(domain_name,fontweight='bold',**text_kwargs)
+            ax.set_title(column+' '+domain_name,fontweight='bold',**text_kwargs)
  
 
 
@@ -1763,7 +1772,7 @@ def make_spatial_bias_exceedance(df, column_o=None, label_o=None, column_m=None,
     plot 
         surface bias plot
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
 
     def_map = dict(states=True,figsize=[10, 5])

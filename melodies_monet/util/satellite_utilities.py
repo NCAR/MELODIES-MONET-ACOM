@@ -3,7 +3,8 @@
 # File started by Maggie Bruckner. 
 # Contains satellite specific pairing operators
 import numpy as np
-from datetime import datetime,timedelta
+import pandas as pd
+import xarray as xr
 
 def vertical_regrid(input_press, input_values, output_press):
     '''
@@ -50,19 +51,17 @@ def mod_to_overpasstime(modobj,opass_tms,partial_col=None):
     outmod : xarray.Dataset 
         revised model data at local overpass time
     '''
-    import pandas as pd
-    import xarray as xr
-    
+
     nst, = opass_tms.shape
-    nmt, = modobj.time.shape
-    ny,nx = modobj.longitude.shape
+    # nmt, = modobj.time.shape
+    # ny,nx = modobj.longitude.shape
     
     # Determine local time offset
     local_utc_offset = (modobj['longitude']/15).round().astype('timedelta64[h]')
     # initialize local time as variable
     modobj['localtime'] = modobj['time'] + local_utc_offset
 
-    # initalize new model object with satellite datetimes
+    # initialize new model object with satellite datetimes
     outmod = []
 
     for ti in np.arange(nst):
@@ -91,9 +90,7 @@ def check_timestep(model_data,obs_data):
         is aggregated to observation timestep. Assumes level 3 data has a monthly or daily timestep and 
         that the model data is higher frequency or same frequency.
     '''
-    import xarray as xr
-    import pandas as pd
-    
+
     # check if l3 is daily
     timestep = xr.infer_freq(obs_data.time.dt.round('D'))
     # if not daily, check if l3 is monthly
@@ -109,10 +106,9 @@ def check_timestep(model_data,obs_data):
 def mopitt_l3_pairing(model_data,obs_data,co_ppbv_varname,global_model=True):
     ''' Calculate model CO column, with MOPITT averaging kernel applied.
     '''
-    import xarray as xr
     try:
         import xesmf as xe
-    except ImportError as e:
+    except ImportError:
         print('satellite_utilities: xesmf module not found')
         raise
     
@@ -189,9 +185,8 @@ def omps_l3_daily_o3_pairing(model_data,obs_data,ozone_ppbv_varname):
         to 1x1 degree OMPS L3 data grid. Following data grid matching, take daily mean for model data.
     '''
     try:
-        import xarray as xr
         import xesmf as xe
-    except ImportError as e:
+    except ImportError:
         print('satellite_utilities: xesmf module not found')
         raise
     
@@ -220,12 +215,12 @@ def space_and_time_pairing(model_data,obs_data,pair_variables):
     '''
     try:
         import xesmf as xe
-    except ImportError as e:
+    except ImportError:
         print('satellite_utilities: xesmf module not found')
         raise
     mod_nf,mod_nz,mod_nx,mod_ny = model_data[pair_variables[0]].shape # assumes model data is structured (time,z,lon,lat). lon/lat dimension order likely unimportant
-    obs_nz = obs_data['pressure'].shape # assumes 1d pressure field in observation set
-    obs_nx,obs_ny = obs_data['longitude'].shape # assumes 2d lat/lon fields in observation ser
+    # obs_nz = obs_data['pressure'].shape # assumes 1d pressure field in observation set
+    obs_nx,obs_ny = obs_data['longitude'].shape # assumes 2d lat/lon fields in observation set
     # initialize dictionary and arrays for interpolated model data
     ds = {i:np.zeros((mod_nz,obs_nx,obs_ny)) for i in pair_variables}
     
@@ -278,8 +273,6 @@ def space_and_time_pairing(model_data,obs_data,pair_variables):
 
 def omps_nm_pairing(model_data,obs_data,ozone_ppbv_varname):
     'Pairs model ozone mixing ratio with OMPS nadir mapper retrievals. Calculates column without applying apriori'
-    import xarray as xr
-    import pandas as pd
  
     print('pairing without applying averaging kernel')
 
@@ -308,11 +301,9 @@ def omps_nm_pairing(model_data,obs_data,ozone_ppbv_varname):
 
 def omps_nm_pairing_apriori(model_data,obs_data,ozone_ppbv_varname):
     'Pairs model ozone mixing ratio data with OMPS nm. Applies satellite apriori column to model observations.'
-    import xarray as xr
-    import pandas as pd
     try:
         import xesmf as xe
-    except ImportError as e:
+    except ImportError:
         print('satellite_utilities: xesmf module not found')
         raise
 
@@ -323,7 +314,7 @@ def omps_nm_pairing_apriori(model_data,obs_data,ozone_ppbv_varname):
     # Grab necessary shape information
     nf,nz_m,nx_m,ny_m = model_data[ozone_ppbv_varname[0]].shape
     nx,ny = obs_data.ozone_column.shape
-    ## initialize intermediates for use in calcluating column
+    ## initialize intermediates for use in calculating column
     pressure_temp = np.zeros((nz_m,nx,ny))
     ozone_temp = np.zeros((nz_m,nx,ny))
     sfc = np.zeros((nx,ny))

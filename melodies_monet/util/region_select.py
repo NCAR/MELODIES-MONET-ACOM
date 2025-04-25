@@ -6,11 +6,9 @@ Masking arbitrary regions with regionmask
 """
 
 from functools import lru_cache
-import re
 import warnings
 
 import pandas as pd
-import requests
 
 from melodies_monet.util.tools import get_epa_region_bounds, get_giorgi_region_bounds
 
@@ -236,7 +234,7 @@ def create_autoregion(data, domain_type, domain_name, domain_info=None):
         bounds = domain_info["bounds"]
     else:
         raise ValueError(
-            "Currently, auto-region selections whithout a domain query have only "
+            "Currently, auto-region selections without a domain query have only "
             "been implemented for Giorgi and EPA regions. You asked for "
             f"{domain_type!r}. If you need more capabilities, check out the custom: "
             "regions capabilities. Be aware that they require regionmask."

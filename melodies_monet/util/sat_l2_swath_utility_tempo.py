@@ -12,7 +12,6 @@ import glob
 import logging
 import warnings
 
-import monetio as mio
 import numba
 import numpy as np
 import xarray as xr
@@ -43,7 +42,7 @@ def calc_grid_corners(ds, lat="latitude", lon="longitude"):
     try:
         import cf_xarray as cfxr
     except ImportError:
-        raise ImportError("Calculating gridcell bounds requires cf_xarray. Pleas install")
+        raise ImportError("Calculating gridcell bounds requires cf_xarray. Please install")
     corners = ds[[lat, lon]].cf.add_bounds([lat, lon])
     ds["lat_b"] = cfxr.bounds_to_vertices(corners[f"{lat}_bounds"], "bounds", order=None)
     ds["lon_b"] = cfxr.bounds_to_vertices(corners[f"{lon}_bounds"], "bounds", order=None)
@@ -253,7 +252,7 @@ def interp_vertical_mod2swath(obsobj, modobj, variables="NO2_col"):
         Model data (as provided by MONETIO)
     obsobj : xr.Dataset
         TEMPO data (as provided by MONETIO). Must include pressure.
-    varables : str | list[str]
+    variables : str | list[str]
         Variables to interpolate.
 
     Returns
@@ -322,7 +321,7 @@ def calc_partialcolumn(modobj, var="NO2"):
 
 
 def apply_weights_mod2tempo_no2_hydrostatic(obsobj, modobj, species="NO2"):
-    """Apply the scattering weights and air mass factors accordint to
+    """Apply the scattering weights and air mass factors according to
     Cooper et. al, 2020, doi: https://doi.org/10.5194/acp-20-7231-2020,
     assuming the hydrostatic equation. It does not require temperature
     nor geometric layer thickness.
@@ -398,7 +397,7 @@ def apply_weights_mod2tempo_no2(obsobj, modobj, species="NO2", column_type="trop
 
 
 def apply_weights_mod2tempo_hcho_hydrostatic(obsobj, modobj, species="HCHO"):
-    """Apply the scattering weights and air mass factors accordint to
+    """Apply the scattering weights and air mass factors according to
     Cooper et. al, 2020, doi: https://doi.org/10.5194/acp-20-7231-2020,
     assuming the hydrostatic equation. It does not require temperature
     nor geometric layer thickness.
@@ -698,7 +697,7 @@ def back_to_modgrid(
     concatenated = paireddict[ordered_keys[0]]
     scan_num = concatenated.attrs["scan_num"]
     granules = [concatenated.attrs["granule_number"]]
-    ref_times = [concatenated.attrs["reference_time_string"][:-1]]  # Remove unneded Z
+    ref_times = [concatenated.attrs["reference_time_string"][:-1]]  # Remove unneeded Z
     if len(paireddict) > 1:
         for k in ordered_keys[1:]:
             ds_to_add = paireddict[k]

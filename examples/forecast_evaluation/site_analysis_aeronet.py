@@ -49,7 +49,7 @@ for i in range(len(site.values)):
         #finds the total length of data
         len_total = len(species_values)
 
-        #finds the percent of the data avaiable
+        #finds the percent of the data available
         if len_total > 0:
             percent_data = (len_notnull/len_total) * 100
         else:

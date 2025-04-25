@@ -22,7 +22,6 @@ dates = pd.date_range(start=start_time_reformat,end=end_time_reformat,freq='h')
 
 # helper function for local time.  Could be important for EPA statistics\n"
 def get_local_time(ds):
-    from numpy import zeros
     if 'utcoffset' in ds.data_vars:
         tim = t.time.copy()
         o = tim.expand_dims({'x':t.x.values}).transpose('time','x')
@@ -42,7 +41,7 @@ dfx = dfp.to_xarray() # convert to xarray
 
 
 # When converting to wide format we have to remerge the site data back into the file.
-dfpsite = df.rename({'siteid':'x'},axis=1).drop_duplicates(subset=['x']) # droping duplicates and renaming
+dfpsite = df.rename({'siteid':'x'},axis=1).drop_duplicates(subset=['x']) # dropping duplicates and renaming
 # convert sites to xarray
 test = dfpsite.drop(['time','time_local','variable','obs'],axis=1).set_index('x').dropna(subset=['latitude','longitude']).to_xarray()
 # merge sites back into the data
@@ -58,5 +57,5 @@ tt['x'] = range(len(tt.x))
 t = tt.expand_dims('y').set_coords(['siteid','latitude','longitude']).transpose('time','y','x')
 
 
-#wite out to filename set in cell 2
+#write out to filename set in cell 2
 write_util.write_ncf(t,'test5.nc')

@@ -3,12 +3,9 @@
 #Code to create plots for satellite observations
 # Copied from surfplots and altered to use xarray syntax instead of pandas
 
-import os
-import monetio as mio
 import monet as monet
 import seaborn as sns
 from monet.util.tools import calc_8hr_rolling_max, calc_24hr_ave
-import xarray as xr
 import pandas as pd
 import numpy as np
 import cartopy.crs as ccrs
@@ -185,7 +182,7 @@ def make_timeseries(df, df_reg=None,column=None, label=None, ax=None, avg_window
         same plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     #First define items for all plots
     #set default text size
@@ -318,7 +315,7 @@ def make_taylor(df,df_reg=None, column_o=None, label_o='Obs', column_m=None, lab
     """
     nan_ind = ((~np.isnan(df[column_o].values))&(~np.isnan(df[column_m].values)))
     #First define items for all plots
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     #set default text size
@@ -427,7 +424,7 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
         spatial overlay plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     def_map = dict(states=True,figsize=[15, 8])
@@ -461,7 +458,7 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
         lonmax=-60.0
         title_add = domain_name + ': '
     elif domain_type == 'epa_region' and domain_name is not None:
-        latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
+        latmin,lonmin,latmax,lonmax,_ = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
     else:
         latmin= math.floor(min(df.latitude))
@@ -482,11 +479,11 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     #With pcolormesh, a Warning shows because nearest interpolation may not work for non-monotonically increasing regions.
     #Because I do not want to pull in the edges of the lat lon for every model I switch to contourf.
     #First determine colorbar, so can use the same for both contourf and scatter
-    if vmin == None and vmax == None:
+    if vmin is None and vmax is None:
         vmin = np.min((vmodel_mean.quantile(0.01), df_mean[column_o].quantile(0.01)))
         vmax = np.max((vmodel_mean.quantile(0.99), df_mean[column_o].quantile(0.99)))
         
-    if nlevels == None:
+    if nlevels is None:
         nlevels = 21
     
     clevel = np.linspace(vmin,vmax,nlevels)
@@ -614,7 +611,7 @@ def make_boxplot(comb_bx, label_bx, ylabel = None, vmin = None, vmax = None, out
         box plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     #First define items for all plots
     #set default text size
@@ -682,7 +679,7 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
         For data in swath format, overplots all differences
         For data on regular grid, mean difference.
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     def_map = dict(states=True,figsize=[15, 8])
@@ -717,7 +714,7 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
         lonmax=-60.0
         title_add = domain_name + ': '
     elif domain_type == 'epa_region' and domain_name is not None:
-        latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
+        latmin,lonmin,latmax,lonmax,_ = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
     else:
         latmin= -90
@@ -736,12 +733,12 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
         map_kwargs['crs'] = proj
     
     #First determine colorbar
-    if vmin == None and vmax == None:
+    if vmin is None and vmax is None:
         #vmin = vmodel_mean.quantile(0.01)
         vmax = np.max((np.abs(diff_mod_min_obs.quantile(0.99)),np.abs(diff_mod_min_obs.quantile(0.01))))
         vmin = -vmax
         
-    if nlevels == None:
+    if nlevels is None:
         nlevels = 21
     print(vmin,vmax)
     clevel = np.linspace(vmin,vmax,nlevels)
@@ -760,7 +757,7 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
     #Uncomment these lines if you update above just to verify colorbars are identical.
     #Also specify plot above scatter = ax.axes.scatter etc.
     #cbar = ax.figure.get_axes()[1] 
-    plt.colorbar(c,ax=ax,extend='both')
+    plt.colorbar(c,ax=ax,extend='both',**cbar_kwargs)
     
     #Update colorbar
     f = plt.gcf()
@@ -772,7 +769,7 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
     position_m = model_ax.get_position()
     position_c = cax.get_position()
     cax.set_position([position_c.x0, position_m.y0, position_c.x1 - position_c.x0, (position_m.y1-position_m.y0)*1.1])
-    cax.set_ylabel('$\Delta$'+ylabel,fontweight='bold',**text_kwargs)
+    cax.set_ylabel(r'$\Delta$'+ylabel,fontweight='bold',**text_kwargs)
     cax.tick_params(labelsize=text_kwargs['fontsize']*0.8,length=10.0,width=2.0,grid_linewidth=2.0)    
     
     #plt.tight_layout(pad=0)

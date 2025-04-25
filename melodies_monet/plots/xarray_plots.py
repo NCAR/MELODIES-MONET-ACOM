@@ -15,7 +15,6 @@ import xarray as xr
 from monet.plots.taylordiagram import TaylorDiagram as td
 from monet.util.tools import get_epa_region_bounds as get_epa_bounds
 from monet.util.tools import get_giorgi_region_bounds as get_giorgi_bounds
-from numpy import corrcoef
 
 from ..plots import savefig
 
@@ -733,7 +732,7 @@ def make_spatial_dist(
     # Uncomment these lines if you update above just to verify colorbars are identical.
     # Also specify plot above scatter = ax.axes.scatter etc.
     # cbar = ax.figure.get_axes()[1]
-    plt.colorbar(c, ax=ax, extend="both")
+    plt.colorbar(c, ax=ax, extend="both", **cbar_kwargs)
 
     # Update colorbar
     f = plt.gcf()
@@ -859,10 +858,10 @@ def make_spatial_bias_gridded(
         lonmax = -60.0
         title_add = domain_name + ": "
     elif domain_type == "epa_region" and domain_name is not None:
-        latmin, lonmin, latmax, lonmax, acro = get_epa_bounds(index=None, acronym=domain_name)
+        latmin, lonmin, latmax, lonmax, _ = get_epa_bounds(index=None, acronym=domain_name)
         title_add = "EPA Region " + domain_name + ": "
     elif domain_type == "giorgi_region" and domain_name is not None:
-        latmin, lonmin, latmax, lonmax, acro = get_giorgi_bounds(index=None, acronym=domain_name)
+        latmin, lonmin, latmax, lonmax, _ = get_giorgi_bounds(index=None, acronym=domain_name)
         title_add = "Giorgi Region " + domain_name + ": "
     elif domain_name == "model":
         latmin, latmax = dset["latitude"].min(), dset["latitude"].max()
@@ -927,7 +926,7 @@ def make_spatial_bias_gridded(
     # Uncomment these lines if you update above just to verify colorbars are identical.
     # Also specify plot above scatter = ax.axes.scatter etc.
     # cbar = ax.figure.get_axes()[1]
-    plt.colorbar(c, ax=ax, extend="both")
+    plt.colorbar(c, ax=ax, extend="both", **cbar_kwargs)
 
     # Update colorbar
     f = plt.gcf()
@@ -1244,7 +1243,7 @@ def sel_region(domain_type=None, domain_name=None, domain_box=None):
     domain_name: str
         EPA or Giorgi region acronym
     domain_box: list[int|float, int|float, int|float, int|float]
-        domain box conatining the region to be plotted. Only read if
+        domain box containing the region to be plotted. Only read if
         region is 'custom'. Expected order: latmin, lonmin, latmax, lonmax
 
     Returns

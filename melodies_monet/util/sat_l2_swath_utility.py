@@ -36,7 +36,7 @@ def trp_interp_swatogrd(obsobj, modobj,no2varname='no2'):
     time   = [datetime.strptime(x,'%Y-%m-%d') for x in obsobj.keys()]
     nobstime  = len(list(obsobj.keys()))
 
-    # daily averaged sate data at model grids
+    # daily averaged sat data at model grids
     no2_modgrid_avg=xr.Dataset(data_vars = {
         'nitrogendioxide_tropospheric_column':(["time", "x", "y"],
                                                 np.full([nobstime, ny, nx], np.nan, dtype=np.float32)),
@@ -55,7 +55,7 @@ def trp_interp_swatogrd(obsobj, modobj,no2varname='no2'):
         modobj_tm = modobj.sel(time=days.strfime('%Y-%d-%m'))
         
         # intermediate need: model NO2 partial columns for day
-        no2col_satm = np.nanmean(modobj_tm['no2col'].values, axis = 0)
+        # no2col_satm = np.nanmean(modobj_tm['no2col'].values, axis = 0)
         
         # sum up tropopause
         if 'pres_pa_trop' in list(modobj.keys()):
@@ -87,8 +87,7 @@ def trp_interp_swatogrd(obsobj, modobj,no2varname='no2'):
             print('Done with TROPOMI regridding', days, ns)
 
             #regridder.destroy()
-            del(regridder)
-            regridder = None
+            del regridder
  
             no2_modgrid_all[:,:,ns] = no2_modgrid
             print(' no2 satellite:', np.nanmin(no2_modgrid), np.nanmax(no2_modgrid))
@@ -124,7 +123,7 @@ def trp_interp_swatogrd_ak(obsobj, modobj,no2varname='no2'):
     time   = [datetime.strptime(x,'%Y-%m-%d') for x in obsobj.keys()]
     nobstime  = len(list(obsobj.keys()))
 
-    # daily averaged sate data at model grids
+    # daily averaged sat data at model grids
     no2_modgrid_avg=xr.Dataset(data_vars = {
         'nitrogendioxide_tropospheric_column':(["time", "x", "y"],
                                                 np.full([nobstime, ny, nx], np.nan, dtype=np.float32)),
@@ -136,7 +135,7 @@ def trp_interp_swatogrd_ak(obsobj, modobj,no2varname='no2'):
             latitude=(["x", "y"], modobj.coords['latitude'].values)),
         attrs=dict(description="daily tropomi data at model grids"),)
 
-    tmpvalue = np.zeros([ny, nx], dtype = np.float64)
+    # tmpvalue = np.zeros([ny, nx], dtype = np.float64)
 
     # loop over all days
     for nd in range(nobstime):
@@ -151,7 +150,7 @@ def trp_interp_swatogrd_ak(obsobj, modobj,no2varname='no2'):
             print('Satellite data was outside available model times')
             continue
         #modobj_tm = modobj.sel(time=days)
-        no2col_satm = modobj_tm[f'{no2varname}_col'].mean(dim='time')
+        # no2col_satm = modobj_tm[f'{no2varname}_col'].mean(dim='time')
               
         # sum up tropopause, needs to be revised to tropopause
         if 'pres_pa_trop' in list(modobj.keys()):
@@ -182,7 +181,7 @@ def trp_interp_swatogrd_ak(obsobj, modobj,no2varname='no2'):
             # force model data to put z dimension last for pressure and no2 partial columns
             mod_pres_no2 = modobj_tm[['pres_pa_mid',f'{no2varname}_col']].mean(dim='time')#.transpose('y','x','z')
             #print(mod_pres_no2['no2col'].shape)
-            # regridding for model pressure, and no2 vertical colums
+            # regridding for model pressure, and no2 vertical columns
             mod_rgd_sat = regridder_ms(mod_pres_no2)
             mod_rgd_sat = mod_rgd_sat.transpose('y','x','z')
             # convert from aks to trop.aks
@@ -253,7 +252,7 @@ def cal_amf_wrfchem(scatw, wrfpreslayer, tpreslev, troppres, wrfno2layer_molec, 
         f = interpolate.interp1d(np.log10(vertical_pres[:]),vertical_scatw[:], fill_value="extrapolate")# relationship between pressure to avk
         wrfavk[yy,xx,:] = f(np.log10(vertical_wrfp[:])) #wrf-chem averaging kernel
 
-    for l in range(nz-1):
+    for l in range(nz-1):  # noqa: E741
         # check if it's within tropopause
         preminus[:,:]         = wrfpreslayer[:,:,l] - troppres[:,:]
 
@@ -261,7 +260,7 @@ def cal_amf_wrfchem(scatw, wrfpreslayer, tpreslev, troppres, wrfno2layer_molec, 
         wrfpreslayer_slc[:,:] = wrfpreslayer[:,:,l]
         wrfavk_scl[:,:]       = wrfavk[:,:,l]
 
-        ind_ak = np.where((np.isinf(wrfavk_scl) == True) | (wrfavk_scl <= 0.0))
+        ind_ak = np.where(np.isinf(wrfavk_scl) | (wrfavk_scl <= 0.0))
         # use the upper level ak 
         if (ind_ak[0].size >= 1):
             tmpvalue_sat[:,:]  = wrfavk[:,:,l+1]
@@ -282,7 +281,7 @@ def cal_amf_wrfchem(scatw, wrfpreslayer, tpreslev, troppres, wrfno2layer_molec, 
     ratio = tamf_org / amf_wrfchem 
 
     # exclude nan
-    ratio = np.where((np.isnan(ratio) == True), 1.0, ratio)
+    ratio = np.where(np.isnan(ratio), 1.0, ratio)
 
     print('Done with Averaging Kernel revision,', 'factor min:',np.nanmin(ratio), 'max:',np.nanmax(ratio)) 
 

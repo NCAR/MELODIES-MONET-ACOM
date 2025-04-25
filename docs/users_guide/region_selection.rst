@@ -16,7 +16,7 @@ In the case of `EPA` regions, be aware that the approximation is quite rough to 
 If `custom:box` is selected a lonlat box in the form of `bounds: [minlat, minlon, maxlat, maxlon]` needs to be provided in `domain_info` (see example below).
 `custom:box` has, however, some limitations: `minlon` and `maxlon` need to be in the range of `[-180, 180]`, and the box cannot cross the antimeridian.
 
-A third, and more sofisticated option, consists in utilizing the optional dependency `regionmask <https://regionmask.readthedocs.io/en/stable/>`__.
+A third, and more sophisticated option, consists in utilizing the optional dependency `regionmask <https://regionmask.readthedocs.io/en/stable/>`__.
 This is selected by defining `domain_type: custom:xxxxx`, where `xxxxx` can be `polygon`, `region` or `file`. 
 All of these options require extra data provided in a `domain_info` keyword in the YAML file.
 This option includes a multiplicity of capabilities:

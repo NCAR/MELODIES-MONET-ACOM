@@ -6,25 +6,18 @@ this code is designed for plotting aircraft specific
 plot types 
 '''
 
-import os
-import monetio as mio
 import monet as monet
 import seaborn as sns
-from monet.util.tools import calc_8hr_rolling_max, calc_24hr_ave
-import xarray as xr
 import pandas as pd
 import numpy as np
 import cartopy.crs as ccrs
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from numpy import corrcoef
 sns.set_context('paper')
-from monet.plots.taylordiagram import TaylorDiagram as td
-from matplotlib.colors import TwoSlopeNorm, ListedColormap, LinearSegmentedColormap, Normalize
+from matplotlib.colors import TwoSlopeNorm, LinearSegmentedColormap, Normalize
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import FuncFormatter
 
-from matplotlib.dates import DateFormatter
 import matplotlib.dates as mdates
 
 
@@ -32,7 +25,6 @@ import matplotlib.dates as mdates
 from monet.util.tools import get_epa_region_bounds as get_epa_bounds 
 import math
 from ..plots import savefig
-from .surfplots import make_24hr_regulatory,calc_24hr_ave_v1,make_8hr_regulatory,calc_8hr_rolling_max_v1,calc_default_colors,new_color_map,map_projection,get_utcoffset,make_timeseries,make_taylor,calculate_boxplot,make_boxplot
 
 
 # Define a custom formatting function 
@@ -90,7 +82,7 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
         surface bias plot
         
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
         
     def_map = dict(states=True,figsize=[10, 5])
@@ -394,7 +386,7 @@ def make_curtain_plot(time, altitude, model_data_2d, obs_pressure, pairdf, mod_v
 
     # Separate subplot for the observation scatter plot
     axs[1].set_title("Observation Scatter", fontsize=text_dict.get('fontsize', 18), fontweight=text_dict.get('fontweight', 'bold'))
-    scatter = axs[1].scatter(time_dates, obs_pressure, c=pairdf[obs_var].values, cmap=cmap, norm=norm, edgecolor=(0, 0, 0, 0), linewidth=0.3, alpha=0.5)
+    _ = axs[1].scatter(time_dates, obs_pressure, c=pairdf[obs_var].values, cmap=cmap, norm=norm, edgecolor=(0, 0, 0, 0), linewidth=0.3, alpha=0.5)
     axs[1].xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H'))
     axs[1].xaxis.set_major_locator(mdates.AutoDateLocator())
     fig.autofmt_xdate(rotation=45, ha='right')
@@ -476,7 +468,7 @@ def make_vertprofile(df, column=None, label=None, ax=None, bins=None, altitude_v
     ax : ax
         Matplotlib ax such that driver.py can iterate to overlay multiple models on the same plot.
     """
-    if debug == False:
+    if debug is False:
         plt.ioff()
     
     # First, define items for all plots
@@ -526,10 +518,10 @@ def make_vertprofile(df, column=None, label=None, ax=None, bins=None, altitude_v
         # Convert bin_midpoints to a numerical data type
         df['bin_midpoints'] = df['bin_midpoints'].astype(float)
 
-        p5 = df.groupby(altitude_bins, observed=True)[column].quantile(0.05, numeric_only=True)
+        # p5 = df.groupby(altitude_bins, observed=True)[column].quantile(0.05, numeric_only=True)
         p10 = df.groupby(altitude_bins, observed=True)[column].quantile(0.10, numeric_only=True)
         p90 = df.groupby(altitude_bins, observed=True)[column].quantile(0.90, numeric_only=True)
-        p95 = df.groupby(altitude_bins, observed=True)[column].quantile(0.95, numeric_only=True)
+        # p95 = df.groupby(altitude_bins, observed=True)[column].quantile(0.95, numeric_only=True)
         
         # Calculate the mean of bin_midpoints grouped by altitude bins
         binmidpoint = df.groupby(altitude_bins, observed=True)['bin_midpoints'].mean(numeric_only=True)
@@ -551,7 +543,7 @@ def make_vertprofile(df, column=None, label=None, ax=None, bins=None, altitude_v
         }
 
         # Track labels that have been added to the legend
-        labels_added_to_legend = set()
+        # labels_added_to_legend = set()
         
         # Plot shaded interquartiles
         plot_kwargs_fillbetween['label'] = f"{label} (interquartile 25th-75th percentile range)"
@@ -634,8 +626,8 @@ def make_vertprofile(df, column=None, label=None, ax=None, bins=None, altitude_v
         # Calculate the 10th, 90th, 5th, and 95th percentiles
         p10 = df.groupby(altitude_bins, observed=True)[column].quantile(0.10, numeric_only=True)
         p90 = df.groupby(altitude_bins, observed=True)[column].quantile(0.90, numeric_only=True)
-        p5 = df.groupby(altitude_bins, observed=True)[column].quantile(0.05, numeric_only=True)
-        p95 = df.groupby(altitude_bins, observed=True)[column].quantile(0.95, numeric_only=True)
+        # p5 = df.groupby(altitude_bins, observed=True)[column].quantile(0.05, numeric_only=True)
+        # p95 = df.groupby(altitude_bins, observed=True)[column].quantile(0.95, numeric_only=True)
 
         # Calculate the mean of bin_midpoints grouped by altitude bins
         binmidpoint = df.groupby(altitude_bins, observed=True)['bin_midpoints'].mean(numeric_only=True)
@@ -654,7 +646,7 @@ def make_vertprofile(df, column=None, label=None, ax=None, bins=None, altitude_v
         }
 
         # Track labels that have been added to the legend
-        labels_added_to_legend = set()
+        # labels_added_to_legend = set()
         
         plot_kwargs_fillbetween['label'] = f"{label} (interquartile 25th-75th percentile range)"
         if interquartile_style == 'shading':
@@ -994,7 +986,7 @@ def make_violin_plot(comb_violin, label_violin, outname='plot',
 
     # Create the violin plot
     # Use 'hue' parameter and set 'orient' to 'v' for vertical orientation
-    sns.violinplot(x='group', y='value', data=melted_comb_violin, hue='group', palette=palette, cut=0, orient='v', density_norm='width', inner='quartile')
+    sns.violinplot(x='group', y='value', data=melted_comb_violin, hue='group', hue_order=order, palette=palette, cut=0, orient='v', density_norm='width', inner='quartile')
 
 
     # Set labels and title with increased size

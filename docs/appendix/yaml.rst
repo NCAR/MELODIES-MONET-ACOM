@@ -131,7 +131,7 @@ this to a smaller value will speed up the pairing process.
 **is_global:** Optional boolean argument to specify if the model dataset is global or
 regional. Used in some satellite pairing methods to indicate if a longitude wrap should 
 be applied. Defaults to False when unspecified and xesmf-based satellite pairing methods
-will assume the model datset is regional.
+will assume the model dataset is regional.
 
 **mapping:** This is the mapping dictionary for all variables to be plotted. 
 For each observational dataset, add a mapping dictionary where the model 

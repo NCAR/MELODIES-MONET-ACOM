@@ -40,7 +40,7 @@ for i in np.arange(len(columns)):
         dfp[columns2].to_xarray()
         if verbose:
             print('COLUMN SUCCESS:',columns[i])
-    except:
+    except Exception:
         if verbose:
             print('COLUMN FAILURE:',columns[i])
         remove_columns.append(columns[i])
