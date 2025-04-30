@@ -2775,6 +2775,8 @@ class analysis:
                                     "domain_type": domain_type,
                                     "domain_name": domain_name,
                                     "vdiff": grp_dict["data_proc"].get("vdiff", None),
+                                    "vmax": grp_dict["data_proc"].get("vmax", None),
+                                    "vmin": grp_dict["data_proc"].get("vmin", None),
                                     "nlevels": grp_dict["data_proc"].get("nlevels", None),
                                     "fig_dict": fig_dict,
                                     "text_dict": text_dict,

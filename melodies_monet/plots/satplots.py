@@ -670,7 +670,7 @@ def make_boxplot(comb_bx, label_bx, ylabel = None, vmin = None, vmax = None, out
     savefig(outname + '.png',loc=4, logo_height=100, bbox_inches='tight', dpi=200)
     
 def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None, 
-                      label_m=None, ylabel = None, vmin=None,
+                      label_m=None, ylabel = None, vmin=None, vdiff=None,
                       vmax = None, nlevels = None, proj = None, outname = 'plot', 
                       domain_type=None, domain_name=None, fig_dict=None, 
                       text_dict=None,debug=False):
@@ -733,10 +733,13 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
         map_kwargs['crs'] = proj
     
     #First determine colorbar
-    if vmin is None and vmax is None:
+    if vmin is None and vmax is None and vdiff is None:
         #vmin = vmodel_mean.quantile(0.01)
         vmax = np.max((np.abs(diff_mod_min_obs.quantile(0.99)),np.abs(diff_mod_min_obs.quantile(0.01))))
         vmin = -vmax
+    if vdiff is not None:
+        vmax = np.float64(vdiff)
+        vmin = -np.float64(vdiff)
         
     if nlevels is None:
         nlevels = 21
@@ -746,9 +749,12 @@ def make_spatial_bias_gridded(df, column_o=None, label_o=None, column_m=None,
     norm = mpl.colors.BoundaryNorm(clevel, ncolors=cmap.N, clip=False)
         
     #I add extend='both' here because the colorbar is setup to plot the values outside the range
-    ax = monet.plots.mapgen.draw_map(crs=map_kwargs['crs'],extent=map_kwargs['extent'])
+    states = fig_dict.get('states', False)
+    counties = fig_dict.get('counties', False)
+    ax = monet.plots.mapgen.draw_map(crs=map_kwargs['crs'],extent=map_kwargs['extent'], states=states, counties=counties)
     # draw scatter plot of model and satellite differences
-    c = ax.axes.scatter(df.longitude,df.latitude,c=diff_mod_min_obs,cmap=cmap,s=2,norm=norm)
+    markersize = fig_dict.get('markersize', 2)
+    c = ax.axes.scatter(df.longitude,df.latitude,c=diff_mod_min_obs,cmap=cmap,s=markersize,norm=norm)
     plt.gcf().canvas.draw() 
     plt.tight_layout(pad=0)
     plt.title(title_add + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
