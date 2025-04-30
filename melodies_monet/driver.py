@@ -187,6 +187,10 @@ class observation:
                 from .util.read_util import control_reading_excel
                 assert len(files) == 1, "MELODIES-MONET can only read one excel file"
                 self.obj = control_reading_excel(files[0], self.obs_type, self.site_dict)
+            elif self.obs_type == 'pandora':
+                from .util.read_util import read_pandora
+                assert extension == '.txt', "MELODIES-MONET can only read pandora .txt files."
+                self.obj = read_pandora(self.file)
             else:
                 self.obj = xr.open_dataset(files[0])
         except Exception as e:
@@ -465,6 +469,7 @@ class model:
         self.mapping = None
         self.variable_dict = None
         self.variable_summing = None
+        self.preprocessing = None
         self.plot_kwargs = None
         self.proj = None
 
@@ -627,6 +632,20 @@ class model:
         self.mask_and_scale()
         self.rename_vars() # rename any variables as necessary 
         self.sum_variables()
+
+        self.preprocessing = control_dict['model'][self.label].get('preprocessing', None)
+        if self.preprocessing is not None:
+            from .util import preprocessing as preproc
+            type_of_preproc = list(self.preprocessing.keys())
+            for preproc_type in type_of_preproc:
+                if preproc_type == "average":
+                    self.obj = preproc.average_between_hours(self.obj)
+                if preproc_type == "total_columns":
+                    for var in list([self.preprocessing[preproc_type]]):
+                        _tmp = xr.full_like(self.obj[var], fill_value=np.nan)
+                        _tmp[{"z": 0}] = preproc.calc_totalcolumn(self.obj, var)
+                        self.obj[var] = _tmp
+
 
     def rename_vars(self):
         """Rename any variables in model with rename set.

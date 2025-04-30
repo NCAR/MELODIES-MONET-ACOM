@@ -395,3 +395,22 @@ def control_reading_excel(data_path, site_type, site_dict):
     if site_type != "pt_sfc":
         warnings.warn("site_type is not pt_sfc. Will attempt to read anyway")
     return compile_sites_excel(data_path, site_dict)
+
+
+def read_pandora(path):
+    """Calls tools for reading Pandora Global Network text files.
+    It is only a wrapper around the pandonia_global_network.py tool
+
+
+    Parameters
+    ----------
+    path: str | list[str]
+        String containing the paths
+
+    Returns
+    -------
+    xr.Dataset
+        Formatted dataset. Should work for MELODIES-MONET.
+    """
+    from pandonia_global_network import open_mfdataset as read_and_format
+    return read_and_format(path)
