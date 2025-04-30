@@ -15,9 +15,9 @@
 #   - If set_axis = True and the proper limits are not provided in the obs section,
 #     a warning will print, and the plot will be created using the default limits.
 analysis:
-  start_time: "2026-07-01 00:00:00" # UTC
-  end_time: "2026-07-31 23:00:00" # UTC
-  output_dir: ./output/airnow_camx  # relative to the program using this control file
+  start_time: "2022-07-18 00:00:00" # UTC
+  end_time: "2022-07-21 23:59:59" # UTC
+  output_dir: ./output/boulderair  # relative to the program using this control file
   #   Currently, the directory must exist or plot saving will error and fail.
   debug: True
   save:
@@ -31,14 +31,12 @@ analysis:
 
 model:
   CAMX: # model label
-    files: /glade/campaign/acom/acom-da/Denver2024-SIP/Denver_O3_2023/camx/outputs/runS20_2026/camxv72_cb6r5.201607*.runS20_2026.avrg.grd03.nc
-    # files_vert: /glade/work/plichtig/NCAR_request_3D_file/camx.3d.12km.201912*.bin
+    files: CAMx73.cb7r1_cf3.20220720.35.camx.avrg.grd03.nc
     mod_type: "camx"
     surf_only: True  # specify that we have only one vertical level; WRF-Chem specific
-    radius_of_influence: 12000 # meters
+    radius_of_influence: 6000 # meters
     mapping: # of _model_ species name to _obs_ species name
-      boulderair: # specifically for the obs labeled 'airnow'
-        # PM25: "PM2.5"
+      boulderair: 
         BENZ: "benzene"
         TOL: "toluene"
     projection: ~
@@ -50,7 +48,7 @@ model:
 obs:
   boulderair: # obs label
     # use_airnow: True
-    filename: /glade/work/plichtig/Boulder_AIR_Summer_2023_Melodies_Monet_Sharing/processed.nc
+    filename: BoulderAir_2022.nc
     obs_type: pt_sfc
     variables: # optional
       benzene:
@@ -170,6 +168,8 @@ plots:
     fig_kwargs: # optional; For all spatial plots, specify map_kwargs here too.
       states: True  # such as whether to show the state boundaries
       figsize: [10, 5]
+      counties: True
+      extent: [-105.4, -104.9, 39.9, 40.27]
     text_kwargs:
       fontsize: 16.
     domain_type: ["all"] #, "state_name", "state_name", "state_name", "epa_region"]
@@ -183,6 +183,7 @@ plots:
     type: "spatial_overlay"
     fig_kwargs:
       states: True
+      counties: True
       figsize: [10, 5]
       extent: [-105.4, -104.9, 39.9, 40.27]
     text_kwargs:
@@ -208,25 +209,6 @@ plots:
       rem_obs_nan: True
       set_axis: False
 
-
-  # plot_grp6:
-  #   type: "scorecard"
-  #   fig_kwargs:
-  #     figsize: [15, 10]
-  #   text_kwargs:
-  #     fontsize: 20.
-  #   domain_type: ["all"]
-  #   domain_name: ["CONUS"]
-  #   region_name: ['epa_region']
-  #   region_list: ['R1','R2','R3','R4','R5','R6','R7','R8','R9','R10']
-  #   urban_rural_name: ['msa_name']
-  #   urban_rural_differentiate_value: ''
-  #   better_or_worse_method: 'NME'    #support 'RMSE', 'IOA' ,' NMB', 'NME'
-  #   model_name_list: ['AirNow','RACM_ESRL','RACM_ESRL_VCP']
-  #   data: ["airnow_RACM_ESRL", "airnow_RACM_ESRL_VCP"]
-  #   data_proc:
-  #     rem_obs_nan: True
-  #     set_axis: False
 
 stats:
   # Stats require positive numbers, so if you want to calculate temperature use Kelvin!
