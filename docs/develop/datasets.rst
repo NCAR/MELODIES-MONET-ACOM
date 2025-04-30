@@ -75,7 +75,7 @@ Aircraft, Sonde, Mobile, and Ground Campaign Data
 
 New aircraft, sonde, mobile, and ground campaign datasets should work in the tool with no changes as long 
 as the data format is NetCDF, ICARTT, or CSV. We are constantly working to generalize our code. If an issue 
-arises, please post `on GitHub Issues <https://github.com/NOAA-CSL/MELODIES-MONET/issues>`__.
+arises, please post `on GitHub Issues <https://github.com/NCAR/MELODIES-MONET/issues>`__.
 
 Satellite
 ^^^^^^^^^

@@ -8,7 +8,7 @@ on how MELODIES MONET connects or plans to connect with them when applicable.
 
 This list is under development. If you are interested in connecting your tool
 with MELODIES MONET, please email us at melodies@ucar.edu. Please refer to the
-`MELODIES MONET project board <https://github.com/orgs/NOAA-CSL/projects/6>`__ 
+`MELODIES MONET project board <https://github.com/orgs/NCAR/projects/150/>`__ 
 under milestone "Connect To Other Model Evaluation Tools" to learn more about 
 this activity.
 
@@ -20,7 +20,7 @@ verification system is an extensive system for evaluating meteorology in a varie
 models including NOAA's Unified Forecasting System (UFS) and NCAR's System for Integrated
 Modeling of the Atmosphere (SIMA) against observations. We are interested in connecting 
 some of METplus capabilities into MELODIES MONET. Please refer to the
-`MELODIES MONET project board <https://github.com/orgs/NOAA-CSL/projects/6>`__ 
+`MELODIES MONET project board <https://github.com/orgs/NCAR/projects/150/>`__ 
 under milestone "Connect MELODIES MONET to METplus" to learn more about this activity.
 
 EViz

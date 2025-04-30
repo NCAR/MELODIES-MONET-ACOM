@@ -60,7 +60,7 @@ Add dependencies from conda-forge::
    
 Now, install the stable branch of MELODIES MONET to the environment::
 
-    $ pip install --no-deps https://github.com/NOAA-CSL/MELODIES-MONET/archive/main.zip
+    $ pip install --no-deps https://github.com/NCAR/MELODIES-MONET/archive/main.zip
 
 
 .. note::
@@ -73,5 +73,5 @@ Now, install the stable branch of MELODIES MONET to the environment::
    that include a record
    of all the dependencies (direct and indirect) are available via the GitHub:
 
-   - `NCAR Casper environment.yml <https://github.com/NOAA-CSL/MELODIES-MONET/tree/develop/python_env_ymls/casper>`__
-   - `NOAA Hera environment.yml <https://github.com/NOAA-CSL/MELODIES-MONET/tree/develop/python_env_ymls/hera>`__
+   - `NCAR Casper environment.yml <https://github.com/NCAR/MELODIES-MONET/tree/develop/python_env_ymls/casper>`__
+   - `NOAA Hera environment.yml <https://github.com/NCAR/MELODIES-MONET/tree/develop/python_env_ymls/hera>`__

@@ -2,12 +2,12 @@
 Development of a model evaluation tool (MELODIES-MONET) for a specific use case with the state of Colorado.
 <h1>
   <a href="https://melodies-monet.readthedocs.io">
-    <img src="https://raw.githubusercontent.com/NOAA-CSL/MELODIES-MONET/main/melodies_monet/data/MM_logo.png" alt="MELODIES MONET logo" height="100" valign="bottom">
+    <img src="https://raw.githubusercontent.com/NCAR/MELODIES-MONET/main/melodies_monet/data/MM_logo.png" alt="MELODIES MONET logo" height="100" valign="bottom">
   </a>
 </h1>
 
-[![License](https://img.shields.io/github/license/NOAA-CSL/MELODIES-MONET.svg)](https://github.com/NOAA-CSL/MELODIES-MONET/blob/main/LICENSE)
-[![CI status](https://github.com/NOAA-CSL/MELODIES-MONET/actions/workflows/ci.yml/badge.svg)](https://github.com/NOAA-CSL/MELODIES-MONET/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/NCAR/MELODIES-MONET.svg)](https://github.com/NCAR/MELODIES-MONET/blob/main/LICENSE)
+[![CI status](https://github.com/NCAR/MELODIES-MONET/actions/workflows/ci.yml/badge.svg)](https://github.com/NCAR/MELODIES-MONET/actions/workflows/ci.yml)
 [![Documentation status](https://readthedocs.org/projects/melodies-monet/badge/?version=develop)](https://melodies-monet.readthedocs.io)
 
 MELODIES MONET is a joint project between NCAR and NOAA to develop a

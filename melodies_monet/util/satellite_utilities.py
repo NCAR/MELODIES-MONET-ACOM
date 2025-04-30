@@ -158,7 +158,7 @@ def mopitt_l3_pairing(model_data,obs_data,co_ppbv_varname,global_model=True):
     log_mod = np.log10(co_regrid)
     diff_arr = log_mod-log_ap
     ## smooth/apply ak
-    smoothed = obs_data['apriori_col'] + (obs_data['ak_col']*diff_arr).sum(dim='alt', skipna=False)
+    smoothed = obs_data['apriori_col'] + (obs_data['ak_col']*diff_arr).sum(dim='alt', min_count=1)
     
     # Add variable name to smoothed model dataarray, combine with obs_data
     smoothed = smoothed.rename(co_ppbv_varname+'_column_model')

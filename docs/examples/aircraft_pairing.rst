@@ -89,7 +89,7 @@ horizontal space, and use linear interpolation on pressure for the vertical spac
 
 All of the examples referred to below can be found in the 
 ``examples`` folder in the MELODIES MONET repository 
-`on GitHub <https://github.com/NOAA-CSL/MELODIES-MONET>`__.
+`on GitHub <https://github.com/NCAR/MELODIES-MONET>`__.
 
 You can select the resampling time window. For testing purposes you can choose 
 600 s and only pair 1--2 flight days to reduce memory constraints and run a 

@@ -354,8 +354,6 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
     elif domain_type == 'epa_region' and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         plt.title('EPA Region ' + domain_name + ': ' + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
-    # elif domain_type == "custom:box":
-    #     latmin, lonmin, latmax, lonmax = domain_info[domain_name][bounds]
     else:
         latmin= math.floor(min(df.latitude))
         lonmin= math.floor(min(df.longitude))
@@ -584,7 +582,7 @@ def make_diurnal_cycle(df, column=None, label=None, ax=None, avg_window=None, yl
     df_plot_group = df.groupby(time.hour)
     df_plot = df_plot_group.median(numeric_only=True)
     ax = df_plot[column].plot(ax=ax, legend=True, **plot_kwargs) 
-    shading_range = kwargs.get("shading_range", None)
+    shading_range = kwargs.get("shading_range", "IQR")
     if shading_range is not None:
         if shading_range not in ["IQR", "std", "total_range"]:
             raise ValueError (
@@ -825,8 +823,12 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     elif (domain_type == 'epa_region' or domain_type == 'auto-region:epa') and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
-    # elif domain_type == "custom:box":
-    #     latmin, lonmin, latmax, lonmax = domain_info[domain_name]["bounds"]
+    elif domain_type.startswith('custom:') or domain_type.startswith('auto-region:'):
+        valid_data = vmodel.notnull()
+        lons = vmodel.longitude.where(valid_data)
+        lats = vmodel.latitutde.where(valid_data)
+        latmin, lonmin, latmax, lonmax = lats.min(), lons.min(), lats.max(), lons.max()
+        title_add = domain_name + ': '
     else:
         latmin= math.floor(min(df.latitude))
         lonmin= math.floor(min(df.longitude))
@@ -1833,7 +1835,7 @@ def make_spatial_bias_exceedance(df, column_o=None, label_o=None, column_m=None,
             df_reg, col1=column_o+'_day', col2=column_m+'_day', map_kwargs=map_kwargs,val_max=vdiff,
             cmap="OrangeBlue", edgecolor='k',linewidth=.8)
 
-        if domain_type == 'all':
+        if domain_type == 'all' and domain_name == 'CONUS':
             latmin= 25.0
             lonmin=-130.0
             latmax= 50.0

@@ -134,8 +134,6 @@ def make_timeseries(
         plot_dict["label"] = label
     if (label is None) and (label not in plot_dict.keys()):
         plot_dict["label"] = varname
-    if vmin is not None and vmax is not None:
-        plot_dict["ylim"] = [vmin, vmax]
     # scale the fontsize for the x and y labels by the text_kwargs
     plot_dict["fontsize"] = text_kwargs["fontsize"] * 0.8
 
@@ -217,6 +215,7 @@ def make_timeseries(
     # ax.legend(frameon=False, fontsize=text_kwargs["fontsize"] * 0.8)
     ax.tick_params(axis="both", length=10.0, direction="inout")
     ax.tick_params(axis="both", which="minor", length=5.0, direction="out")
+    ax.set_ylim(vmin, vmax)
     ax.legend(
         frameon=False,
         fontsize=text_kwargs["fontsize"] * 0.8,
@@ -1190,34 +1189,34 @@ def make_diurnal_cycle(dset, varname, ax=None, **kwargs):
     ax.set_ylabel(ylabel, **text_kwargs)
     ax.legend(fontsize=text_kwargs["fontsize"] * 0.8)
 
-    if "range_shading" in kwargs:
-        range_shading = kwargs["range_shading"]
-        if range_shading == "no":
-            pass
-        elif (range_shading not in ["total", "std", "IQR"]) and ("pct:" not in range_shading):
-            warnings.warn(
-                f"range_shading is {range_shading}, not in ['no', 'total', 'std', 'IQR'] nor 'pct:'."
-                + " Ignoring."
-            )
-        else:
-            if range_shading == "total":
-                range_max = dset_diurnal_group.max()[varname]
-                range_min = dset_diurnal_group.min()[varname]
-            elif range_shading == "std":
-                std = dset_diurnal_group.std()[varname]
-                range_max = dset_diurnal[varname] + std
-                range_min = dset_diurnal[varname] - std
-            elif range_shading == "IQR":
-                range_max = dset_diurnal_group.quantile(q=0.75)[varname]
-                range_min = dset_diurnal_group.quantile(q=0.25)[varname]
-            elif "pct:" in range_shading:
-                quantile = float(range_shading[4:]) / 100
-                upper_range = quantile + (1 - quantile) / 2
-                lower_range = (1 - quantile) / 2
-                range_max = dset_diurnal_group.quantile(upper_range)[varname]
-                range_min = dset_diurnal_group.quantile(lower_range)[varname]
-            color = p[-1].get_color()
-            ax.fill_between(dset_diurnal["hour"], range_min, range_max, alpha=0.2, color=color)
+    range_shading = kwargs.get("range_shading", "IQR")
+    range_shading = kwargs["range_shading"]
+    if range_shading == "no":
+        pass
+    elif (range_shading not in ["total", "std", "IQR"]) and ("pct:" not in range_shading):
+        warnings.warn(
+            f"range_shading is {range_shading}, not in ['no', 'total', 'std', 'IQR'] nor 'pct:'."
+            + " Ignoring."
+        )
+    else:
+        if range_shading == "total":
+            range_max = dset_diurnal_group.max()[varname]
+            range_min = dset_diurnal_group.min()[varname]
+        elif range_shading == "std":
+            std = dset_diurnal_group.std()[varname]
+            range_max = dset_diurnal[varname] + std
+            range_min = dset_diurnal[varname] - std
+        elif range_shading == "IQR":
+            range_max = dset_diurnal_group.quantile(q=0.75)[varname]
+            range_min = dset_diurnal_group.quantile(q=0.25)[varname]
+        elif "pct:" in range_shading:
+            quantile = float(range_shading[4:]) / 100
+            upper_range = quantile + (1 - quantile) / 2
+            lower_range = (1 - quantile) / 2
+            range_max = dset_diurnal_group.quantile(upper_range)[varname]
+            range_min = dset_diurnal_group.quantile(lower_range)[varname]
+        color = p[-1].get_color()
+        ax.fill_between(dset_diurnal["hour"], range_min, range_max, alpha=0.2, color=color)
     vmax = kwargs.get("vmax", None)
     vmin = kwargs.get("vmin", None)
     vmax = float(vmax) if vmax is not None else None

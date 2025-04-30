@@ -223,6 +223,7 @@ def cal_amf_wrfchem(scatw, wrfpreslayer, tpreslev, troppres, wrfno2layer_molec, 
     preminus         = np.zeros([nsaty, nsatx], dtype=np.float32)
     wrfpreslayer_slc = np.zeros([nsaty, nsatx], dtype=np.float32)
     tmpvalue_sat     = np.zeros([nsaty, nsatx], dtype=np.float32)
+    tmpvalue_mod     = np.zeros([nsaty, nsatx], dtype=np.float32)
     
     
     # set the surface pressure to wrf one
@@ -269,8 +270,10 @@ def cal_amf_wrfchem(scatw, wrfpreslayer, tpreslev, troppres, wrfno2layer_molec, 
         ind = np.where(preminus >= 0.0)
         # within tropopause
         if (ind[0].size >= 1):
-            nume[:,:] += wrfavk_scl[:,:]*wrfno2layer_molec[:,:,l]
-            deno[:,:] += wrfno2layer_molec[:,:,l]
+            # select grids that this level is within tropopause
+            tmpvalue_mod[:,:]  = wrfno2layer_molec[:,:,l]
+            nume[ind] += wrfavk_scl[ind]*tmpvalue_mod[ind]
+            deno[ind] += tmpvalue_mod[ind]
         else:
             break
             

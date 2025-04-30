@@ -16,7 +16,7 @@ comprehensive analysis package in the future. Our goals are:
 - Well documented for easy use by the community
 - Written to be user-friendly with easy customization
 - Written in open-source programming languages, mainly Python 
-- Publicly available through GitHub: https://github.com/NOAA-CSL/MELODIES-MONET
+- Publicly available through GitHub: https://github.com/NCAR/MELODIES-MONET
 - Keep the code and structure of MELODIES MONET simple and easy to understand 
   in order to encourage the community development of the code
 - Maintain capabilities to produce hundreds of plots for quick diagnostic

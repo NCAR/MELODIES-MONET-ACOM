@@ -60,7 +60,7 @@ define latitude, longitude, pressure, and a datetime object, MELODIES MONET may 
 to directly read the input files.
 
 Please refer to the
-`MELODIES MONET project board <https://github.com/orgs/NOAA-CSL/projects/6>`__ 
+`MELODIES MONET project board <https://github.com/orgs/NCAR/projects/150/>`__ 
 to learn more about our current and future development plans.
 
 Supported Observations
@@ -89,7 +89,7 @@ Under Development:
    * `Pandora <https://pandora.gsfc.nasa.gov/>`_ (`Pandonia Global Network <https://www.pandonia-global-network.org/>`_)
 
 Please refer to the
-`MELODIES MONET project board <https://github.com/orgs/NOAA-CSL/projects/6>`__ 
+`MELODIES MONET project board <https://github.com/orgs/NCAR/projects/150/>`__ 
 under milestone "Surface and Aircraft Evaluation Version 2" to learn more about our current and future development plans.
 
 .. note::
@@ -135,12 +135,12 @@ MELODIES MONET is written generally enough that other field campaign datasets sh
 minimal adjustments.
 
 Please refer to the
-`MELODIES MONET project board <https://github.com/orgs/NOAA-CSL/projects/6>`__ 
+`MELODIES MONET project board <https://github.com/orgs/NCAR/projects/150/>`__ 
 under milestone "Surface and Aircraft Evaluation Version 2" to learn more about our current and future development plans.
 
 Satellite
 ^^^^^^^^^
 
 Please refer to the
-`MELODIES MONET project board <https://github.com/orgs/NOAA-CSL/projects/6>`__ 
+`MELODIES MONET project board <https://github.com/orgs/NCAR/projects/150/>`__ 
 under milestone "Remote Sensing Evaluation Version 2" to learn more about our current and future development plans.

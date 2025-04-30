@@ -40,8 +40,8 @@ extensions = [
 ]
 
 extlinks = {
-    'issue': ('https://github.com/noaa-csl/melodies-monet/issues/%s', 'GH %s'),
-    'pull': ('https://github.com/noaa-csl/melodies-monet/pull/%s', 'PR %s'),
+    'issue': ('https://github.com/ncar/melodies-monet/issues/%s', 'GH %s'),
+    'pull': ('https://github.com/ncar/melodies-monet/pull/%s', 'PR %s'),
 }
 
 autosummary_generate = True  # default in Sphinx v4

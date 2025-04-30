@@ -96,7 +96,7 @@ environment for running and developing MELODIES MONET.
 
    If you didn't clone the repo and don't want to::
 
-      $ wget -O - https://raw.githubusercontent.com/NOAA-CSL/MELODIES-MONET/main/python_env_ymls/hera/link_cartopy_files.sh | bash
+      $ wget -O - https://raw.githubusercontent.com/NCAR/MELODIES-MONET/main/python_env_ymls/hera/link_cartopy_files.sh | bash
 
 
 **You are ready to start using and developing MELODIES MONET!**

@@ -13,7 +13,7 @@ as `custom:box`.
 `Giorgi` regions and a rough, rectangular approximation to `EPA` regions have already been hardcoded into
 MELODIES-MONET.
 In the case of `EPA` regions, be aware that the approximation is quite rough to force it into a rectangular lonlat box, and although it is probably sufficient for plotting maps, it can lead to errors if used for anything else.
-If `custom:box` is selected a lonlat box in the form of `bounds: [minlat, minlon, maxlat, maxlon]` needs to be provided in `domain_info` (see example below).
+If `custom:box` is selected a lonlat box in the form of `bounds: [minlon, maxlon, minlat, maxlat]` needs to be provided in `domain_info` (see example below).
 `custom:box` has, however, some limitations: `minlon` and `maxlon` need to be in the range of `[-180, 180]`, and the box cannot cross the antimeridian.
 
 A third, and more sophisticated option, consists in utilizing the optional dependency `regionmask <https://regionmask.readthedocs.io/en/stable/>`__.
@@ -34,7 +34,7 @@ An example of the plotting part of an arbitrary plot for eact type of region is 
   domain_name: ["CONUS", "model", "CO",          "R8",        "CNA",                "R8box",      "onepoly",        "twopolys",       "colorado",      "denverfile",  "denverurl"]
   domain_info:
     R8box: 
-      bounds: [39.8, -105.30, 40.2, -105.1]
+      bounds: [-105.30, -105.1, 39.8, 40.2]
     onepoly:
       mask_info: [[-104.968, 39.47], [-104.618, 39.75], [-104.968, 40.06], [-105.32, 39.75]]
     twopolys: 

@@ -23,7 +23,7 @@ variety of observational datasets all within a common framework.
 How MELODIES MONET works
 ------------------------
 
-A single `driver file <https://github.com/NOAA-CSL/MELODIES-MONET/blob/develop/melodies_monet/driver.py>`__. 
+A single `driver file <https://github.com/NCAR/MELODIES-MONET/blob/main/melodies_monet/driver.py>`__. 
 includes the core code that "drives" MELODIES MONET. The driver file 
 initializes several classes as shown in the schematic below. 
 

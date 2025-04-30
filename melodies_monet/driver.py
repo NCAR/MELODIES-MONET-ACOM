@@ -552,13 +552,19 @@ class model:
             vars_for_summing  = []
             for var in self.variable_summing.keys():
                 vars_for_summing= vars_for_summing + self.variable_summing[var]['vars']
-        list_input_var = []
+        list_input_var = list(self.variable_dict.keys()) if self.variable_dict is not None else []
         for obs_map in self.mapping:
             if self.variable_summing is not None:
                 list_input_var = list_input_var + list(set(self.mapping[obs_map].keys()).union(set(vars_for_summing)) - set(self.variable_summing.keys()) - set(list_input_var) )
             else:
                 list_input_var = list_input_var + list(set(self.mapping[obs_map].keys()) - set(list_input_var))
         #Only certain models need this option for speeding up i/o.
+
+        # Remove standardized variable names that user may have requested to pair on or output in MM
+        # as they will be added anyway and here would cause [var_list] to fail in the below model readers.
+        for vn in ["temperature_k", "pres_pa_mid"]:
+            if vn in list_input_var:
+                list_input_var.remove(vn)
 
         if 'cmaq' in self.model.lower():
             print('**** Reading CMAQ model output...')
@@ -2768,6 +2774,8 @@ class analysis:
                                     "outname": outname,
                                     "domain_type": domain_type,
                                     "domain_name": domain_name,
+                                    "vdiff": grp_dict["data_proc"].get("vdiff", None),
+                                    "nlevels": grp_dict["data_proc"].get("nlevels", None),
                                     "fig_dict": fig_dict,
                                     "text_dict": text_dict,
                                     "debug": self.debug
@@ -2778,7 +2786,7 @@ class analysis:
                         elif plot_type.lower() == 'spatial_dist':
                             outname = "{}.{}".format(outname, p.obs)
                             plot_kwargs = {
-                                "dset": p.obj,
+                                "dset": pairdf,
                                 "varname": obsvar,
                                 "outname": outname,
                                 "label": p.obs,
