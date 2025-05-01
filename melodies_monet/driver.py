@@ -171,7 +171,6 @@ class observation:
 
         _, extension = os.path.splitext(files[0])
         try:
-            import pdb; pdb.set_trace()
             if extension in {'.nc', '.ncf', '.netcdf', '.nc4'}:
                 if len(files) > 1:
                     self.obj = xr.open_mfdataset(files)
