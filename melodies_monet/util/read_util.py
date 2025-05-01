@@ -412,5 +412,5 @@ def read_pandora(path):
     xr.Dataset
         Formatted dataset. Should work for MELODIES-MONET.
     """
-    from pandonia_global_network import open_mfdataset as read_and_format
+    from .pandonia_global_network import open_mfdataset as read_and_format
     return read_and_format(path)

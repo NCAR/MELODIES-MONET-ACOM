@@ -113,11 +113,11 @@ class observation:
     def __init__(self):
         """Initialize an :class:`observation` object."""
         self.obs = None
+        self.obs_type = None
         self.label = None
         self.file = None
         self.obj = None
         """The data object (:class:`pandas.DataFrame` or :class:`xarray.Dataset`)."""
-        self.type = 'pt_src'
         self.sat_type = None
         self.data_proc = None
         self.variable_dict = None
@@ -133,7 +133,7 @@ class observation:
             f"    label={self.label!r},\n"
             f"    file={self.file!r},\n"
             f"    obj={repr(self.obj) if self.obj is None else '...'},\n"
-            f"    type={self.type!r},\n"
+            f"    type={self.obs_type!r},\n"
             f"    sat_type={self.sat_type!r},\n"
             f"    data_proc={self.data_proc!r},\n"
             f"    variable_dict={self.variable_dict!r},\n"
@@ -171,6 +171,7 @@ class observation:
 
         _, extension = os.path.splitext(files[0])
         try:
+            import pdb; pdb.set_trace()
             if extension in {'.nc', '.ncf', '.netcdf', '.nc4'}:
                 if len(files) > 1:
                     self.obj = xr.open_mfdataset(files)
@@ -190,7 +191,7 @@ class observation:
             elif self.obs_type == 'pandora':
                 from .util.read_util import read_pandora
                 assert extension == '.txt', "MELODIES-MONET can only read pandora .txt files."
-                self.obj = read_pandora(self.file)
+                self.obj = read_pandora(self.file).copy()
             else:
                 self.obj = xr.open_dataset(files[0])
         except Exception as e:
@@ -1231,7 +1232,7 @@ class analysis:
 
                 # pair the data
                 # if pt_sfc (surface point network or monitor)
-                if obs.obs_type.lower() == 'pt_sfc':
+                if obs.obs_type.lower() == 'pt_sfc' or obs.obs_type.lower() == 'pandora':
                     # convert this to pandas dataframe unless already done because second time paired this obs
                     if not isinstance(obs.obj, pd.DataFrame):
                         obs.obs_to_df()
@@ -1846,7 +1847,7 @@ class analysis:
                             pairdf_all = pairdf_all.loc[pairdf_all[grp_var].isin(grp_select[grp_var].values)]
 
                         # Drop NaNs if using pandas 
-                        if obs_type in ['pt_sfc','aircraft','mobile','ground','sonde']: 
+                        if obs_type in ['pt_sfc','aircraft','mobile','ground','sonde', 'pandora']: 
                             if grp_dict['data_proc']['rem_obs_nan'] is True:
                                 # I removed drop=True in reset_index in order to keep 'time' as a column.
                                 pairdf = pairdf_all.reset_index().dropna(subset=[modvar, obsvar])

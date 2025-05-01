@@ -25,7 +25,7 @@ def create_file_with_coords(
     path_data_root : str
         string containing the path to the directory where the files
         containing the measurements are located. The name of those files
-        should contain the abbreviation snf XYZ where the abbreviation
+        should contain the abbreviation XYZ or wildcards where the abbreviation
         of the station is located.
     variables : str | list[str]
         list of variables to concatenate
@@ -48,7 +48,8 @@ def create_file_with_coords(
     compile_data = xr.Dataset()
     print(abbrevs)
     for x, abbrev in enumerate(abbrevs):
-        path_data = path_data_root.replace("XYZ", abbrev)
+        if "XYZ" in path_data_root:
+            path_data = path_data_root.replace("XYZ", abbrev)
         all_data_paths = sorted(glob.glob(path_data))
 
         # Empty lists are False, following PEP8

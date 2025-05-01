@@ -811,7 +811,7 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     df_mean=df.groupby(['siteid'],as_index=False).mean(numeric_only=True)
     
     #Take the mean over time for the model output
-    vmodel_mean = vmodel[column_m].mean(dim='time').squeeze()
+    vmodel_mean = vmodel[column_m].mean(dim='time').squeeze().load()
     
     #Determine the domain
     if domain_type == 'all' and domain_name == 'CONUS':
@@ -824,9 +824,9 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
     elif domain_type.startswith('custom:') or domain_type.startswith('auto-region:'):
-        valid_data = vmodel.notnull()
-        lons = vmodel.longitude.where(valid_data)
-        lats = vmodel.latitutde.where(valid_data)
+        valid_data = vmodel_mean.notnull()
+        lons = vmodel_mean.longitude.where(valid_data)
+        lats = vmodel_mean.latitude.where(valid_data)
         latmin, lonmin, latmax, lonmax = lats.min(), lons.min(), lats.max(), lons.max()
         title_add = domain_name + ': '
     else:
