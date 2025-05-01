@@ -69,7 +69,8 @@ def _rename_and_format(df):
     df2 = df2.set_index("time")
     print("Calculating pandora hourly averages")
     df2 = df2.resample('h').mean()
-    return df2.to_xarray().expand_dims("x", axis=1)
+    ds = xr.Dataset.from_dataframe(df2).expand_dims("x", axis=1).compute()
+    return ds.copy(deep=True)
 
 
 def _read_pandora_file(file_path):
