@@ -2750,6 +2750,7 @@ class analysis:
                                 outname=outname,
                                 domain_type=domain_type,
                                 domain_name=domain_name,
+                                domain_info=domain_info,
                                 fig_dict=fig_dict,
                                 text_dict=text_dict,
                                 debug=self.debug

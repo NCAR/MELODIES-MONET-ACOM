@@ -247,7 +247,7 @@ def get_utcoffset(lat,lon):
 def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=None, 
                       label_m=None, ylabel = None, ptile = None, vdiff=None,
                       outname = 'plot', 
-                      domain_type=None, domain_name=None, domain_info=None, fig_dict=None, 
+                      domain_type=None, domain_name=None, domain_info=None, fig_dict=None,
                       text_dict=None,debug=False):
         
     """Creates surface spatial bias plot. 
@@ -354,6 +354,27 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
     elif domain_type == 'epa_region' and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         plt.title('EPA Region ' + domain_name + ': ' + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
+    elif domain_type == 'custom:box' and domain_name is not None:
+        lonmin,lonmax,latmin,latmax = domain_info['bounds']
+        plt.title(domain_name + ': ' + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
+    elif domain_type.startswith('custom'):
+        import pdb; pdb.set_trace()
+        import xarray as xr
+        from ..util.region_select import select_region
+        _lon = np.arange(-179.995, 180, 0.01)
+        _lat = np.arange(-89.995, 90, 0.01)
+        _da = xr.DataArray(dims=["lat", "lon"], coords={
+            "lon": (["lon"], _lon),
+            "lat": (["lat"], _lat)
+        })
+        _da = 1
+        _da = select_region(_da, domain_type, domain_name, domain_info)
+        valid_data = _da.notnull()
+        lons = _da.longitude.where(valid_data)
+        lats = _da.latitude.where(valid_data)
+        del _da, _lon, lons, lats, valid_data
+        latmin, lonmin, latmax, lonmax = lats.min(), lons.min(), lats.max(), lons.max()
+        title_add = domain_name + ': '
     else:
         latmin= math.floor(min(df.latitude))
         lonmin= math.floor(min(df.longitude))
