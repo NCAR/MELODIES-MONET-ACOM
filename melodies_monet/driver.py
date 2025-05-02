@@ -2874,7 +2874,8 @@ class analysis:
                                     vmodel = self.models[p.model].obj.loc[dict(time=slice(self.start_time, self.end_time))]
                             except KeyError as e:
                                 raise Exception("MONET requires an altitude dimension named 'z'") from e
-                            if grp_dict.get('data_proc', {}).get('crop_model', False) and domain_name != all:
+                            if (grp_dict.get('data_proc', {}).get('crop_model', False)
+                                    and (domain_type.startswith('custom') or domain_name.startswith('auto-region'))):
                                 vmodel = select_region(vmodel, domain_type, domain_name, domain_info)
 
                             # Determine proj to use for spatial plots
