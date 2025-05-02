@@ -357,7 +357,7 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
     elif domain_type == 'custom:box' and domain_name is not None:
         lonmin,lonmax,latmin,latmax = domain_info['bounds']
         plt.title(domain_name + ': ' + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
-    elif domain_type.startswith('custom'):
+    elif domain_type.startswith('custom') or domain_name.startswith('auto-region'):
         import pdb; pdb.set_trace()
         import xarray as xr
         from ..util.region_select import select_region
