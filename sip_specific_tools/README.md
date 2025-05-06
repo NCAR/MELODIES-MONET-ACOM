@@ -35,7 +35,7 @@ options:
 
 `resample`(optional): If the data should be resampled. Options: `h`, `d`. If None is provided, the time in the files will be kept without resampling.
 
-`method`: How to perform the resample. Default: `mean` -> The data will be interpolated linearly to represent instantaneous data at the resampling time. Other options: `median`, `max`, `min`, `inst`.
+`method`: How to perform the resample. Default: `mean` -> The data will be averaged hourly. Other options: `median`, `max`, `min`, `inst`.
 
 `output_name.nc`: Name of the output file. It will be netCDF
 
