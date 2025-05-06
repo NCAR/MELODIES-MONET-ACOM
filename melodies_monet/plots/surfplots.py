@@ -358,7 +358,6 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
         lonmin,lonmax,latmin,latmax = domain_info['bounds']
         plt.title(domain_name + ': ' + label_m + ' - ' + label_o,fontweight='bold',**text_kwargs)
     elif domain_type.startswith('custom') or domain_name.startswith('auto-region'):
-        import pdb; pdb.set_trace()
         import xarray as xr
         from ..util.region_select import select_region
         _lon = np.arange(-179.995, 180, 0.01)
@@ -844,10 +843,24 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
     elif (domain_type == 'epa_region' or domain_type == 'auto-region:epa') and domain_name is not None:
         latmin,lonmin,latmax,lonmax,acro = get_epa_bounds(index=None,acronym=domain_name)
         title_add = 'EPA Region ' + domain_name + ': '
-    elif domain_type.startswith('custom:') or domain_type.startswith('auto-region:'):
-        valid_data = vmodel_mean.notnull()
-        lons = vmodel_mean.longitude.where(valid_data)
-        lats = vmodel_mean.latitude.where(valid_data)
+    elif domain_type == 'custom:box' and domain_name is not None:
+        lonmin,lonmax,latmin,latmax = domain_info['bounds']
+        title_add = domain_name + ': '
+    elif domain_type.startswith('custom') or domain_name.startswith('auto-region'):
+        import xarray as xr
+        from ..util.region_select import select_region
+        _lon = np.arange(-179.995, 180, 0.01)
+        _lat = np.arange(-89.995, 90, 0.01)
+        _da = xr.DataArray(dims=["lat", "lon"], coords={
+            "lon": (["lon"], _lon),
+            "lat": (["lat"], _lat)
+        })
+        _da = 1
+        _da = select_region(_da, domain_type, domain_name, domain_info)
+        valid_data = _da.notnull()
+        lons = _da.longitude.where(valid_data)
+        lats = _da.latitude.where(valid_data)
+        del _da, _lon, lons, lats, valid_data
         latmin, lonmin, latmax, lonmax = lats.min(), lons.min(), lats.max(), lons.max()
         title_add = domain_name + ': '
     else:
