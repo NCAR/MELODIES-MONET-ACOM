@@ -13,7 +13,7 @@ import xarray as xr
 
 
 def create_file_with_coords(
-    path_coords, path_data_root, variables="all", resample_freq=None, method="inst"
+    path_coords, path_data_root, variables="all", resample_freq=None, method="mean"
 ):
     """Read coordinates from BoulderAir file.
     File should be a csv have columns site_abbreviation, lat, lon
@@ -108,7 +108,7 @@ def create_file_with_coords(
     return compile_data
 
 
-def _concat_data(all_data_paths, resample_freq=None, method="inst"):
+def _concat_data(all_data_paths, resample_freq=None, method="mean"):
     """Loads the data. If inst_resample is not None, tries to interpolate
     to inst_resample frequency. If mean_resample is not None, tries to
     resample using mean values.
@@ -141,7 +141,7 @@ def _concat_data(all_data_paths, resample_freq=None, method="inst"):
     return data
 
 
-def _read_data(data_path, resample_freq=None, method="inst"):
+def _read_data(data_path, resample_freq=None, method="mean"):
     """Loads the data. If inst_resample is not None, tries to interpolate
     to inst_resample frequency. If mean_resample is not None, tries to
     mean_resample using mean values.
@@ -192,7 +192,7 @@ def main():
     parser.add_argument("-p", "--path", required=True)
     parser.add_argument("-v", "--variables", default="nox")
     parser.add_argument("-r", "--resample_freq", default=None)
-    parser.add_argument("-m", "--method", default="inst")
+    parser.add_argument("-m", "--method", default="mean")
     parser.add_argument("-o", "--output", default="processed.nc")
     args = parser.parse_args()
     processed_data = create_file_with_coords(
