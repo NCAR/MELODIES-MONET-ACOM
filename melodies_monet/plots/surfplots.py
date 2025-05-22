@@ -319,6 +319,11 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
         ylabel = 'Mean '+ylabel
     else:
         ylabel = '{:02d}'.format(ptile)+'th percentile '+ylabel
+
+    if fig_dict is not None:
+        cmap = fig_dict.get('cmap', 'OrangeBlue')
+    else:
+        cmap = 'OrangeBlue'
  
     if df_reg is not None:
         # JianHe: include options for percentile calculation (set in yaml file)
@@ -331,7 +336,7 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
         #and then uses -1*val_max value for the minimum.
         ax = monet.plots.sp_scatter_bias(
             df_mean, col1=column_o+'_reg', col2=column_m+'_reg', map_kwargs=map_kwargs,val_max=vdiff,
-            cmap="OrangeBlue", edgecolor='k',linewidth=.8)
+            cmap=cmap, edgecolor='k',linewidth=.8)
     else:
         # JianHe: include options for percentile calculation (set in yaml file)
         if ptile is None:
@@ -343,7 +348,7 @@ def make_spatial_bias(df, df_reg=None, column_o=None, label_o=None, column_m=Non
         #and then uses -1*val_max value for the minimum.
         ax = monet.plots.sp_scatter_bias(
             df_mean, col1=column_o, col2=column_m, map_kwargs=map_kwargs,val_max=vdiff,
-            cmap="OrangeBlue", edgecolor='k',linewidth=.8)
+            cmap=cmap, edgecolor='k',linewidth=.8)
 
     if domain_type == 'all' and domain_name == 'CONUS':
         latmin= 25.0
@@ -890,7 +895,10 @@ def make_spatial_overlay(df, vmodel, column_o=None, label_o=None, column_m=None,
         nlevels = 21
     
     clevel = np.linspace(vmin,vmax,nlevels)
-    cmap = plt.get_cmap('Spectral_r',nlevels-1)
+    if fig_dict is not None:
+        cmap = plt.get_cmap(fig_dict.get('cmap', 'Spectral_r'), nlevels-1)
+    else:
+        cmap = plt.get_cmap('Spectral_r',nlevels-1)
     norm = mpl.colors.BoundaryNorm(clevel, ncolors=cmap.N, clip=False)
         
     # For unstructured grid, we need a more advanced plotting code
@@ -1670,7 +1678,11 @@ def scorecard_step9_makeplot(output_matrix=None,column=None,region_list=None,mod
     ax2.set_yticks([i+0.5 for i in range(len(region_list)*2)],y2_labels)  
 
     #plot and set colorbar
-    plot1= plt.pcolormesh(output_matrix,cmap='coolwarm',edgecolor='k',vmin=-100,vmax=100)
+    if fig_dict is not None:
+        cmap = fig_dict.get('cmap', 'coolwarm')
+    else:
+        cmap = 'coolwarm'
+    plot1= plt.pcolormesh(output_matrix,cmap=cmap,edgecolor='k',vmin=-100,vmax=100)
     cb = f.colorbar(plot1,ticks=[-100,-50,-20,0,20,50,100],pad=0.1)
     cb.ax.set_yticklabels(['99.9% Worse','99% Worse','95% Worse','No Significant Difference',
                            '95% Better','99% Better','99.9% Better'])
@@ -1862,12 +1874,16 @@ def make_spatial_bias_exceedance(df, column_o=None, label_o=None, column_m=None,
         .reset_index(drop=True)
     )
 
+    if fig_dict is not None:
+        cmap = fig_dict.get('cmap', 'OrangeBlue')
+    else:
+        cmap = 'OrangeBlue'
     if not df_reg.empty:
         #Specify val_max = vdiff. the sp_scatter_bias plot in MONET only uses the val_max value
         #and then uses -1*val_max value for the minimum.
         ax = monet.plots.sp_scatter_bias(
             df_reg, col1=column_o+'_day', col2=column_m+'_day', map_kwargs=map_kwargs,val_max=vdiff,
-            cmap="OrangeBlue", edgecolor='k',linewidth=.8)
+            cmap=cmap, edgecolor='k',linewidth=.8)
 
         if domain_type == 'all' and domain_name == 'CONUS':
             latmin= 25.0
