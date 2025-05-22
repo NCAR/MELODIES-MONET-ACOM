@@ -708,7 +708,10 @@ def make_spatial_dist(
         nlevels = 21
     print(vmin, vmax)
     clevel = np.linspace(vmin, vmax, nlevels)
-    cmap = mpl.cm.get_cmap("plasma", nlevels - 1)
+    if fig_dict is not None:
+        cmap = mpl.cm.get_cmap(fig_dict.get('cmap', 'plasma'), nlevels - 1)
+    else:
+        cmap = mpl.cm.get_cmap("plasma", nlevels - 1)
     norm = mpl.colors.BoundaryNorm(clevel, ncolors=cmap.N, clip=False)
 
     # I add extend='both' here because the colorbar is setup to plot the values outside the range
@@ -899,7 +902,10 @@ def make_spatial_bias_gridded(
         nlevels = 21
 
     clevel = np.linspace(-vdiff, vdiff, nlevels)
-    cmap = mpl.cm.get_cmap("RdBu_r", nlevels - 1)
+    if fig_dict is not None:
+        cmap = mpl.cm.get_cmap(fig_dict.get("cmap", "RdBu_r"), nlevels - 1)
+    else:
+        cmap = mpl.cm.get_cmap("RdBu_r", nlevels - 1)
     norm = mpl.colors.BoundaryNorm(clevel, ncolors=cmap.N, clip=False)
 
     # I add extend='both' here because the colorbar is setup to plot the values outside the range
