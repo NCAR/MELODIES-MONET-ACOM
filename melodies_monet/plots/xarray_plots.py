@@ -1168,7 +1168,7 @@ def make_diurnal_cycle(dset, varname, ax=None, **kwargs):
     dset_diurnal = dset_diurnal_group.median()
 
     # Set some defaults
-    text_kwargs = {"fontsize": 14}
+    text_kwargs = {"fontsize": 14, "fontweight": "bold"}
     style_dict = {"linestyle": "-", "marker": "*", "linewidth": "1.2", "markersize": "6.0"}
     if ax is None:
         style_dict["color"] = "k"
