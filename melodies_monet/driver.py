@@ -2957,7 +2957,8 @@ class analysis:
         for obsvar in obs_vars:
             # Read in some plotting specifications stored with observations.
             obs_plot_dict = {}
-            for p in pair_labels:
+            for pair_label in pair_labels:
+                p = self.paired[pair_label]
                 if p.obs in self.obs and self.obs[p.obs].variable_dict is not None:
                     if obsvar in self.obs[p.obs].variable_dict:
                         obs_plot_dict = self.obs[p.obs].variable_dict[obsvar]
