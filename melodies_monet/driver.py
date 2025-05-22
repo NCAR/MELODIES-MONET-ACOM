@@ -2929,7 +2929,6 @@ class analysis:
         from .util.region_select import select_region
 
         for obs in self.obs:
-            import pdb; pdb.set_trace()
             obs_data = {obs: self.obs[obs]}
 
             # first get the stats dictionary from the yaml file
