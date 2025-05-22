@@ -2947,17 +2947,21 @@ class analysis:
 
         # Then loop over all the observations
         # first get the observational obs labels
-        pair1 = self.paired[list(self.paired.keys())[0]]
-        obs_vars = pair1.obs_vars
+        obs_vars = []
+        for pair_label in pair_labels:
+            obs_vars.extend(self.paired[pair_label].obs_vars)
+        # Guarantee uniqueness of obs_vars, without altering order
+        obs_vars = list(dict.fromkeys(obs_vars))
+
+        # loop through obs variables
         for obsvar in obs_vars:
             # Read in some plotting specifications stored with observations.
-            if self.obs[pair1.obs].variable_dict is not None:
-                if obsvar in self.obs[pair1.obs].variable_dict.keys():
-                    obs_plot_dict = self.obs[pair1.obs].variable_dict[obsvar]
-                else:
-                    obs_plot_dict = {}
-            else:
-                obs_plot_dict = {}
+            obs_plot_dict = {}
+            for p in pair_labels:
+                if p.obs in self.obs and self.obs[p.obs].variable_dict is not None:
+                    if obsvar in self.obs[p.obs].variable_dict:
+                        obs_plot_dict = self.obs[p.obs].variable_dict[obsvar]
+                    break
 
             # JianHe: Determine if calculate regulatory values
             cal_reg = obs_plot_dict.get('regulatory', False)
