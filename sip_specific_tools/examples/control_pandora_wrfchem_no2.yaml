@@ -120,7 +120,6 @@ plots:
       states: True  # such as whether to show the state boundaries
       figsize: [10, 5]
       counties: True
-      extent: [-104, -106., 39.16, 40.5]
     text_kwargs:
       fontsize: 16.
     domain_type: ["custom:box"]
@@ -129,7 +128,7 @@ plots:
     domain_name: ["Front Range"]
     domain_info:
       'Front Range':
-        bounds: [-104, -106., 39.16, 40.5]  
+        bounds: [-106, -104., 39.16, 40.5]  
     data: ["pandora_wrfchem"]
     data_proc:
       rem_obs_nan: True
@@ -142,7 +141,6 @@ plots:
       states: True
       counties: True
       figsize: [10, 5]
-      extent: [-104, -106., 39.16, 40.5]
     text_kwargs:
       fontsize: 16.
     domain_type: ["custom:box"]
@@ -151,7 +149,7 @@ plots:
     domain_name: ["Front Range"]
     domain_info:
       'Front Range':
-        bounds: [-104, -106., 39.16, 40.5] 
+        bounds: [-106, -104., 39.16, 40.5] 
     data: ["pandora_wrfchem"]
     data_proc:
       rem_obs_nan: True
@@ -170,7 +168,7 @@ plots:
     domain_name: ["Front Range"]
     domain_info:
       'Front Range':
-        bounds: [-104, -106., 39.16, 40.5]
+        bounds: [-106, -104., 39.16, 40.5]
     data: ["pandora_wrfchem"]
     data_proc:
       rem_obs_nan: True
@@ -193,5 +191,5 @@ stats:
   domain_name: ["Front Range"]
   domain_info:
     'Front Range':
-      bounds: [-104, -106., 39.16, 40.5]
+      bounds: [-106, -104., 39.16, 40.5]
   data: ["pandora_wrfchem"]
