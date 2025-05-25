@@ -57,8 +57,8 @@ obs:
 
 model:
   CAMX: # model label
-    files: /glade/work/plichtig/camx/toy_data/CAMx73.cb7r1_cf3.20220720.35.camx.avrg.grd03.nc
-    files_vert: /glade/work/plichtig/toy_data/camx.3d.4km_lonlatcorrected.20220720.nc
+    files: /glade/work/plichtig/camx/toy_data/CAMx73.cb7r1_cf3.20240720.35.camx.avrg.grd03.nc
+    files_vert: /glade/work/plichtig/toy_data/camx.3d.4km_lonlatcorrected.20240720.nc
     mod_type: "camx"
     surf_only: False  
     radius_of_influence: 12000 # meters
