@@ -458,3 +458,34 @@ def read_noaa_gml(filename):
     df = df.set_index('time')
     ds = xr.Dataset.from_dataframe(df)
     return ds
+
+
+def read_noaa_gml_multifile(filenames):
+    """Function to read .dat formatted NOAA GML observations.
+
+    Parameters
+    ----------
+    filenames : str | list[str]
+        Filenames of .dat file to be read
+
+    Returns
+    -------
+    xarray.Dataset
+        Xarray dataset containing information from .dat file
+
+    """
+    if isinstance(filenames, str):
+        files = sorted(glob.glob(filenames))
+    else:
+        files = []
+        for file in filenames:
+            file.expand(sorted(glob.glob(filenames)))
+
+    data = read_noaa_gml(files[0])
+    if len(files) > 1:
+        for file in len(files):
+            data2 = read_noaa_gml(file)
+            if data['siteid'][0].values != data['siteid'][0].values:
+                raise Exception('Only one station at a time is supported')
+            data = xr.merge([data, data2], dim='time')
+    return data.sortby('time')
