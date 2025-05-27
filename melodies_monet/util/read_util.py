@@ -457,6 +457,4 @@ def read_noaa_gml(filename):
     df = df.sort_values(by='time', ignore_index=True)
     df = df.set_index('time')
     ds = xr.Dataset.from_dataframe(df)
-    ds = ds.expand_dims(dim='x', axis=1)
-    ds['siteid'] = (('x', ), [siteid])
     return ds
