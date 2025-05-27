@@ -4,6 +4,7 @@ import os
 import warnings
 import pandas as pd
 import xarray as xr
+import glob
 
 
 def read_saved_data(analysis, filenames, method, attr, xr_kws={}):
@@ -414,3 +415,48 @@ def read_pandora(path):
     """
     from .pandonia_global_network import open_mfdataset as read_and_format
     return read_and_format(path)
+
+
+def read_noaa_gml(filename):
+    """Function to read .dat formatted NOAA GML observations.
+
+    Parameters
+    ----------
+    filename : str
+        Filename of .dat file to be read
+
+    Returns
+    -------
+    xarray.Dataset
+        Xarray dataset containing information from .dat file
+
+    """
+
+    # Ignore preamble
+    preamble_end_line = 0
+    with open(filename, 'r') as f:
+        for i, line in enumerate(f):
+            if line.strip() and line.strip().split()[0] == 'STN':
+                preamble_end_line = i
+                break
+
+    # Read the file again, skipping the identified preamble lines
+    df = pd.read_csv(
+        filename,
+        skiprows=preamble_end_line,
+        sep=r"\s+",
+    )
+    df = df.rename(
+        columns={"YEAR": "year", "MON": "month", "DAY": "day", "HR": "hour", "STN": "siteid"}
+    )
+    df['time'] = pd.to_datetime(df[["year", "month", "day", "hour"]])
+    siteid = df["siteid"][0]
+    df = df[df.columns[~df.columns.isin(["year", "month", "day", "hour", "siteid"])]]
+
+    # Sort the values based on time
+    df = df.sort_values(by='time', ignore_index=True)
+    df = df.set_index('time')
+    ds = xr.Dataset.from_dataframe(df)
+    ds = ds.expand_dims(dim='x', axis=1)
+    ds['siteid'] = (('x', ), [siteid])
+    return ds
