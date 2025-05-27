@@ -451,7 +451,7 @@ def read_noaa_gml(filename):
     )
     df['time'] = pd.to_datetime(df[["year", "month", "day", "hour"]])
     siteid = df["siteid"][0]
-    df = df[df.columns[~df.columns.isin(["year", "month", "day", "hour", "siteid"])]]
+    df = df[df.columns[~df.columns.isin(["year", "month", "day", "hour"])]]
 
     # Sort the values based on time
     df = df.sort_values(by='time', ignore_index=True)
