@@ -1,4 +1,5 @@
-# Example for NWR data, also onformation for TBL and BAO is added (commented out)
+# Compare CAMx to surface ozone data from NOAA GML
+# Example is for NWR data, information for TBL and BAO is also included (commented out)
 
 analysis:
   start_time: "2016-06-01 00:00:00" # UTC
